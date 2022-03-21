@@ -1,0 +1,24 @@
+authors				Kaj de Vos
+
+inherits			XOrg
+
+version				1.0.4
+headline			X Window System logo
+description
+	The xlogo program simply displays the X Window System logo.
+
+packages			app/xlogo-1.0.4
+
+needs
+	LibraryX11
+	LibraryXSessionManager
+	LibraryXExtensions
+	LibraryXRender
+	LibraryXFreeType
+	LibraryXToolkit
+	LibraryXMiscUtilities
+	LibraryXAthenaWidgets 7
+run-needs
+	XOrg-Server
+
+documentation		README COPYING ChangeLog

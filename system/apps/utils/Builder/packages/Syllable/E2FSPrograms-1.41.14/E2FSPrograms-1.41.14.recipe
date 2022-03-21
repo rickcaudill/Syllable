@@ -1,0 +1,13 @@
+authors				Kaj de Vos
+status				incomplete
+
+; For O_DIRECT:
+needs				Syllable >= 0.6.7
+
+configure-options
+;	--with-root-prefix=''
+;	--sysconfdir=/etc
+	--enable-symlink-build
+	--enable-symlink-install
+	--disable-tls
+	--enable-elf-shlibs

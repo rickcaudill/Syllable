@@ -1,0 +1,5 @@
+authors				Kaj de Vos
+status				broken
+notes				Needs (POSIX) semaphores
+
+make-shared

@@ -1,0 +1,77 @@
+diff -ru mesa-6.0.1.original/bin/mklib mesa-6.0.1/bin/mklib
+--- mesa-6.0.1.original/bin/mklib	2004-03-30 14:48:04.000000000 +0000
++++ mesa-6.0.1/bin/mklib	2004-05-01 13:00:55.000000000 +0000
+@@ -109,7 +109,7 @@
+ #
+ case $ARCH in
+ 
+-    'Linux' | 'OpenBSD')
++    'Linux' | 'OpenBSD' | 'syllable')
+ 	# GCC-based environment
+ 	LIBNAME="lib${LIBNAME}"     # prefix with "lib"
+ 
+diff -ru mesa3d-6.2.1-original/Makefile mesa3d-6.2.1/Makefile
+--- mesa3d-6.2.1-original/Makefile	2004-12-05 19:25:19.000000000 +0100
++++ mesa3d-6.2.1/Makefile	2005-08-20 12:24:10.000000000 +0200
+@@ -49,6 +49,7 @@
+ aix-gcc \
+ aix-static \
+ beos \
++syllable \
+ darwin \
+ darwin-static \
+ freebsd \
+@@ -194,6 +195,9 @@
+ 	$(DIRECTORY)/src/mesa/tnl_dd/imm/NOTES.imm			\
+ 	$(DIRECTORY)/src/mesa/drivers/beos/*.cpp			\
+ 	$(DIRECTORY)/src/mesa/drivers/beos/Makefile			\
++	$(DIRECTORY)/src/mesa/drivers/syllable/*.cpp			\
++	$(DIRECTORY)/src/mesa/drivers/syllable/*.[ch]			\
++	$(DIRECTORY)/src/mesa/drivers/syllable/Makefile			\
+ 	$(DIRECTORY)/src/mesa/drivers/common/*.[ch]			\
+ 	$(DIRECTORY)/src/mesa/drivers/common/descrip.mms		\
+ 	$(DIRECTORY)/src/mesa/drivers/dos/*.[chS]			\
+@@ -278,6 +282,9 @@
+ 	$(DIRECTORY)/src/glut/beos/*.[ch]		\
+ 	$(DIRECTORY)/src/glut/beos/*.cpp		\
+ 	$(DIRECTORY)/src/glut/beos/Makefile		\
++	$(DIRECTORY)/src/glut/syllable/*.[ch]		\
++	$(DIRECTORY)/src/glut/syllable/*.cpp		\
++	$(DIRECTORY)/src/glut/syllable/Makefile		\
+ 	$(DIRECTORY)/src/glut/dos/*.[ch]		\
+ 	$(DIRECTORY)/src/glut/dos/Makefile.DJ		\
+ 	$(DIRECTORY)/src/glut/dos/PC_HW/*.[chS]		\
+@@ -285,6 +292,8 @@
+ 	$(DIRECTORY)/src/glut/ggi/Makefile		\
+ 	$(DIRECTORY)/progs/beos/*.cpp			\
+ 	$(DIRECTORY)/progs/beos/Makefile		\
++	$(DIRECTORY)/progs/syllable/*.cpp			\
++	$(DIRECTORY)/progs/syllable/Makefile		\
+ 	$(DIRECTORY)/progs/images/*.rgb			\
+ 	$(DIRECTORY)/progs/images/*.rgba		\
+ 	$(DIRECTORY)/progs/demos/Makefile*		\
+diff -ru mesa3d-6.2.1-original/src/mesa/Makefile mesa3d-6.2.1/src/mesa/Makefile
+--- mesa3d-6.2.1-original/src/mesa/Makefile	2004-10-04 16:44:50.000000000 +0200
++++ mesa3d-6.2.1/src/mesa/Makefile	2005-08-09 13:56:15.000000000 +0200
+@@ -24,8 +24,10 @@
+ 		$(MAKE) linux-solo ; \
+ 	elif [ "${DRIVER_DIRS}" = "osmesa" ] ; then \
+ 		$(MAKE) osmesa-only ; \
+-	elif [ "$(DRIVER_DIRS)" = "beos" ]; then \
++	elif [ "${DRIVER_DIRS}" = "beos" ]; then \
+ 		$(MAKE) beos ; \
++	elif [ "${DRIVER_DIRS}" = "syllable" ]; then \
++		$(MAKE) syllable ; \
+ 	else \
+ 		$(MAKE) stand-alone ; \
+ 	fi
+@@ -34,6 +36,9 @@
+ beos: depend subdirs mesa.a
+ 	cd drivers/beos; $(MAKE)
+ 
++# Syllable driver target
++syllable: depend subdirs mesa.a
++	cd drivers/syllable; $(MAKE)
+ 
+ ######################################################################
+ # Linux solo DRI drivers

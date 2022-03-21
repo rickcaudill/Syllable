@@ -1,0 +1,76 @@
+authors
+	Kurt Skauen
+	Kaj de Vos
+	Arno Klenke
+	Kristian Van Der Vliet
+	Jake Hamby
+maintainers			Kaj de Vos
+status				testing
+warnings
+	Compile breaks on an illegal instruction crash with GCC 4.1.x itself installed when building in a subdirectory.
+	GCC has a circular dependency on GLibC.
+
+needs
+;	For -O3 with -fpic: >= 2.13.1
+;	For symbol versioning: >= 2.14
+	BinaryUtilities >= 2.14
+;	Syllable switched to the new GLibC ABI:
+	glibc >= 2.3.3
+;	For Fortran:
+;	GMP
+build-needs
+	Syllable >= 0.6.4
+;	AutoConfigure >= 2.13
+;	AutoConfigure 2.13
+;	AutoMake
+;	LibraryTool
+;	LibraryTool 1.4a-GCC3.0
+;	Without make bootstrap:
+	GNU-CompilerCollection >= 2.95 < 4
+;	For Ada:
+;	Gnat >= 3.13 | GNU-CompilerCollection >= 3.1
+	GAWK
+;	Bison
+
+; Doesn't work:
+;make-shared
+; Patch is already in configured form:
+_patch
+	cd gcc &&
+	autoconf
+
+configure-options
+	--enable-languages=c,c++
+;		Couldn't find TexInfo handed on a silver platter:
+;		,treelang
+;		Fortran doesn't build with the new GLibC 2.3.x:
+;		,fortran
+;		Won't do --enable-shared:
+;		,objc
+;		,java,ada
+	--with-arch=i586
+	--enable-shared
+	--enable-threads
+	--enable-sjlj-exceptions
+	--enable-__cxa_atexit
+;	Breaks compile in the last phase:
+;	--enable-clocale=gnu
+	--with-system-zlib
+	--disable-libstdcxx-pch
+;	--with-local-prefix=/usr/local
+
+make-env
+	BOOT_CFLAGS		'-O'
+;	DLL_PATH		"$DLL_PATH:$PWD/gcc"
+
+links
+;	framework/headers/	include
+;	Fix C++:
+	headers/			framework/include
+;	/system/development/resources/GNU-CompilerCollection/4.1.2/framework/headers/ framework/include
+	gcc					programs/cc
+	libgcc.a			framework/libraries/gcc/i586-pc-syllable/4.1.2/libgcc_static.a
+;	For some packages:
+;	programs/cpp		framework/libraries/
+;	For WebKit:
+;	programs/gcc		/usr/bin/

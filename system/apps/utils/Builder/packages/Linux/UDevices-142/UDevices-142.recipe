@@ -1,0 +1,54 @@
+authors				Kaj de Vos
+status				testing
+warnings			Assumes system installation!
+
+headline			Userspace Device management
+description
+	UDev allows Linux users to have a dynamic /dev directory and it provides the ability to have persistent device names.
+licenses			GPL
+
+home				www.kernel.org/pub/linux/utils/kernel/hotplug/udev.html
+locations			http://www.kernel.org/pub/linux/utils/kernel/hotplug/
+packages			udev-142
+needs				Linux >= 2.6.22
+
+no-sysconfdir
+no-libexecdir
+_configure-args
+	--prefix=/
+	--sbindir=/system/resources/UDevices/142/system-programs
+	--includedir=/system/development/resources/UDevices/142/framework/headers
+	--mandir=/system/resources/UDevices/142/manuals
+configure-options
+	--sysconfdir=/etc
+	--exec-prefix=/
+	--libexecdir=/lib/udev
+
+;	Doesn't work as advertised:
+;	--libdir=/lib
+;	--with-libdir-name=/lib
+
+;	--docdir=/usr/share/doc/udev-142
+
+;super-install
+system-prefix-var	DESTDIR
+
+install-tree
+post-install
+	sudo install -m644 ../UDevices-142/rules/packages/64-*.rules			$IMAGE/lib/udev/rules.d/ &&
+	sudo install -m644 ../UDevices-142/rules/packages/40-pilot-links.rules	$IMAGE/lib/udev/rules.d/ &&
+	sudo install -m644 ../UDevices-142/rules/packages/40-isdn.rules			$IMAGE/lib/udev/rules.d/
+
+documentation
+	README COPYING NEWS ChangeLog TODO
+	docs/*
+build-docs			INSTALL
+
+links
+;	Broken link into system root:
+	libudev.so.0.3.0		framework/libraries/libudev.so
+;	For LFS init scripts:
+	system-programs/udevd	/sbin/
+	system-programs/udevadm	/sbin/
+
+move-files			/lib/libudev.so* framework/libraries/

@@ -1,0 +1,41 @@
+authors				Kaj de Vos
+status				testing
+
+build-needs
+;	Without make bootstrap:
+	GNU-CompilerCollection >= 2.95
+;	For Ada:
+;	Gnat >= 3.13 | GNU-CompilerCollection >= 3.1
+	GAWK
+;	Bison
+
+configure-options
+	--enable-languages=c,c++
+;		,treelang
+;		,fortran
+;		,objc
+;		,java,ada
+	--with-arch=i486
+	--enable-shared
+	--enable-threads=posix
+	--enable-__cxa_atexit
+	--enable-clocale=gnu
+	--with-system-zlib
+	--disable-libstdcxx-pch
+;	--with-local-prefix=/usr/local
+;	--libexecdir=/usr/lib
+	i486-pc-linux-gnu
+
+make-env			BOOT_CFLAGS '-O'
+
+links
+;	framework/headers/	include
+;	Fix C++:
+	headers/			framework/include
+;	/system/development/resources/GNU-CompilerCollection/4.1.2/framework/headers/ framework/include
+	gcc					programs/cc
+	libgcc.a			framework/libraries/gcc/i486-pc-linux-gnu/4.1.2/libgcc_static.a
+;	For some packages:
+;	programs/cpp		framework/libraries/
+;	For WebKit:
+;	programs/gcc		/usr/bin/

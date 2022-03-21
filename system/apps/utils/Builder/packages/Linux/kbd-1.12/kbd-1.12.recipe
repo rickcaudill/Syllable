@@ -1,0 +1,33 @@
+authors				Kaj de Vos
+status				testing
+
+licenses			GPL-2+ other
+locations
+	http://www.kernel.org/pub/linux/utils/kbd/
+	ftp://ftp.win.tue.nl/pub/linux-local/utils/kbd/
+
+build-dir			.
+
+no-sysconfdir
+no-bindir
+no-sbindir
+no-libdir
+no-includedir
+no-libexecdir
+no-datarootdir
+no-infodir
+;configure-options		--datadir=/lib/kbd
+
+system-prefix-var	DESTDIR
+; $prefix must be empty:
+;install				make DESTDIR=$IMAGE install
+
+documentation
+	README COPYING CHANGES CREDITS
+	doc/TODO
+;	doc/*
+
+_links
+	programs/kbd_mode	/bin/
+	programs/openvt		/bin/
+	programs/setfont	/bin/

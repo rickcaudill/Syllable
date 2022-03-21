@@ -1,0 +1,28 @@
+authors				Kaj de Vos
+status				testing
+notes				Doesn't find LibraryTIFF
+
+needs
+	Eina
+	FreeType >= 2.3.9
+	SDL
+;	For examples:
+	ECore
+
+make-shared
+
+_configure-options
+;	--enable-buffer
+;	--disable-fb
+;	--enable-directfb
+	--disable-wayland-shm
+;	--enable-wayland-egl
+;	--enable-tests
+	--enable-build-examples
+;	--disable-fontconfig
+
+;	For 1.1.0:
+;	--enable-software-sdl
+;	--disable-evas-cserve
+;	Needs new GCC:
+;	--disable-cpu-sse3

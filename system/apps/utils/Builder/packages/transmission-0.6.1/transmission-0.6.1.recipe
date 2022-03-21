@@ -1,0 +1,27 @@
+authors
+	Kaj de Vos
+	Kristian Van Der Vliet
+status				testing
+notes				Undefined reference to SHA1 with OpenSSL
+
+headline			BitTorrent client
+description
+	Transmission is a fast, easy, and free multi-platform BitTorrent client with a focus on being lightweight yet feature-filled. On Syllable, currently only the text-mode version is available.
+licenses			MIT
+
+home
+	www.transmissionbt.com
+;	transmission.m0k.org
+locations			http://download.m0k.org/transmission/files/
+packages			Transmission-0.6.1
+
+needs				Syllable >= 0.6.3
+;recommends			OpenSSL
+
+build-dir			.
+
+configure-options
+;	--verbose
+	--disable-openssl
+
+documentation		README LICENSE NEWS AUTHORS

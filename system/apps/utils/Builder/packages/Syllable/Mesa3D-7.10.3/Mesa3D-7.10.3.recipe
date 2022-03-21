@@ -1,0 +1,6 @@
+authors
+	Jamie Clarkson
+	Kaj de Vos
+maintainers			Kaj de Vos
+status				incomplete
+notes				Builds only OSMesa and GLU. No Syllable driver and GLUT is not ported.

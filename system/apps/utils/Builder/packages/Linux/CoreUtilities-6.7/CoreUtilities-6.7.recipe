@@ -1,0 +1,50 @@
+authors				Kaj de Vos
+status				testing
+
+configure-options	--build=i486-pc-linux-gnu
+
+links
+;	For she-bang lines:
+	programs/env		/usr/bin/
+;	For GLibC:
+	programs/pwd		/bin/
+;	For FindUtils:
+	programs/sort		/bin/
+;	For SUDo:
+	programs/mv			/bin/
+;	For JEd, S-Lang:
+	programs/cp			/bin/
+	programs/rm			/bin/
+	programs/ln			/bin/
+;	For NcFTP:
+	programs/ls			/bin/
+;	For SaMBa:
+	programs/echo		/bin/
+;	For general FHS compatibility:
+	programs/cat		/bin/
+	programs/chgrp		/bin/
+	programs/chmod		/bin/
+	programs/chown		/bin/
+	programs/date		/bin/
+	programs/dd			/bin/
+	programs/df			/bin/
+	programs/false		/bin/
+	programs/hostname	/bin/
+	programs/mkdir		/bin/
+	programs/mknod		/bin/
+	programs/rmdir		/bin/
+	programs/stty		/bin/
+;	programs/su			/bin/
+	programs/sync		/bin/
+	programs/true		/bin/
+	programs/uname		/bin/
+	programs/chroot		/usr/sbin/
+;	For DHCP early initalisation:
+	programs/sleep		/bin/
+;	For SysKLogD:
+	programs/install	/usr/bin/
+
+; ProcPS has others:
+delete-files
+	programs/kill
+	programs/uptime

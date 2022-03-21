@@ -1,0 +1,21 @@
+authors				Kaj de Vos
+status				testing
+warnings
+	Builds on DirectFB and LibPNG in the host system.
+	DirectFB graphics mode may hang.
+
+recommends
+	OpenSSL
+	ZLibrary
+	BZip2
+	GPM
+	LibJPEG
+	LibTIFF
+	X11
+
+configure-options
+	--enable-graphics
+;	--without-fb
+;	--without-directfb
+;	--with-ssl
+;	--with-x

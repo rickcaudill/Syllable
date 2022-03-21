@@ -1,0 +1,11 @@
+authors				Kaj de Vos
+status				testing
+
+version				1.7.5
+locations			http://download.enlightenment.org/releases/
+
+configure-env
+	CFLAGS "$CFLAGS -fvisibility=hidden"
+	LDFLAGS "$LDFLAGS -fvisibility=hidden"
+
+system-prefix-var	DESTDIR

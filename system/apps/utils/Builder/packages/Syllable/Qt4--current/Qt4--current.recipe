@@ -1,0 +1,50 @@
+authors				Kaj de Vos
+status				testing
+warnings
+	Hardwired to install into /resources/!
+	Installs plugins/webkit/ directory during configuring!
+
+needs
+;	For PThreads enhancements and fixes:
+	Syllable > 0.6.7
+	DirectFrameBuffer >= 0.9
+
+configure-options
+;	-no-ipv6
+
+	-plugindir		/resources/Qt4/framework/plugins
+	-headerdir		/resources/Qt4/framework/headers
+	-importdir		/resources/Qt4/framework/imports
+	-translationdir	/resources/Qt4/data/translations
+	-docdir			/resources/Qt4/documentation
+	-opensource
+	-confirm-license
+	-fast
+;	-optimized-qmake
+	-platform linux-g++
+	-embedded
+;	Embedded lite:
+;	-qpa
+;	Wants to target X otherwise in the non-embedded build:
+;	-no-gui
+;	-qt-gfx-directfb
+	-plugin-gfx-directfb
+	-no-gfx-linuxfb
+	-no-kbd-tty
+	-no-mouse-linuxtp
+	-D QT_NO_QWS_MULTIPROCESS
+;	-D QT_NO_SXE
+;	-no-feature-filesystemwatcher
+	-no-pch
+;	-no-mitshm
+;	-no-exceptions
+;	-no-glib
+;	-no-nis
+	-no-opengl
+	-no-webkit
+	-system-sqlite
+;	-nomake tools
+	-nomake examples
+	-nomake demos
+;	Huge:
+	-nomake docs

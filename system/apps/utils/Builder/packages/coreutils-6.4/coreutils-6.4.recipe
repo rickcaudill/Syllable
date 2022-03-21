@@ -1,0 +1,64 @@
+authors
+	Kurt Skauen
+	Sebastien Keim
+	Kaj de Vos
+	Kristian Van Der Vliet
+maintainers			Kaj de Vos
+status				testing
+warnings			Super-user access is needed to install su properly.
+
+inherits			gnu
+
+headline			GNU core command-line utilities
+description
+	The GNU Core Utilities are the basic file, shell and text manipulation utilities of the GNU operating system. These are the core utilities which are expected to exist on every operating system.
+licenses			GPL
+
+home				www.gnu.org/software/coreutils/
+packages			coreutils/coreutils-6.4
+
+build-needs
+	coreutils
+	perl
+install-needs		coreutils
+
+;super-install
+system-prefix-var	DESTDIR
+
+documentation		README COPYING ABOUT-NLS NEWS ChangeLog TODO AUTHORS THANKS THANKS-to-translators
+links
+;	For she-bang lines:
+	programs/env		/usr/bin/
+;	For GLibC:
+	programs/pwd		/bin/
+;	For FindUtils:
+	programs/sort		/bin/
+;	For SUDo:
+	programs/mv			/bin/
+;	For JEd, S-Lang:
+	programs/cp			/bin/
+	programs/rm			/bin/
+	programs/ln			/bin/
+;	For NcFTP:
+	programs/ls			/bin/
+;	For SaMBa:
+	programs/echo		/bin/
+;	For general FHS compatibility:
+	programs/cat		/bin/
+	programs/chgrp		/bin/
+	programs/chmod		/bin/
+	programs/chown		/bin/
+	programs/date		/bin/
+	programs/dd			/bin/
+;	programs/df			/bin/
+	programs/false		/bin/
+	programs/hostname	/bin/
+	programs/mkdir		/bin/
+	programs/mknod		/bin/
+	programs/rmdir		/bin/
+	programs/stty		/bin/
+	programs/su			/bin/
+	programs/sync		/bin/
+	programs/true		/bin/
+	programs/uname		/bin/
+	programs/chroot		/usr/sbin/

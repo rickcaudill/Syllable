@@ -1,0 +1,18 @@
+authors
+	Rui Caridade
+	Kaj de Vos
+status				broken
+notes				Link failure
+
+needs
+	sdl >= 1.2
+	sdl-image
+	zlib
+;	opengl
+;	NeoGeo BIOS
+
+patch-config
+
+;configure-env		CPPFLAGS "$CPPFLAGS -I/system/indexes/framework/headers/SDL"
+
+make-vars			CFLAGS -DNO_OPENGL

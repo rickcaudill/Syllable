@@ -1,0 +1,52 @@
+authors				Kaj de Vos
+status				developing
+warnings
+	Hardcoded for installation in /resources/
+	Installation tries to set "root" permissions.
+
+inherits			Enlightenment--current
+
+version				0.17.0-alpha5
+headline			Enlightenment DR17 Window Manager and Desktop Shell
+description
+	Enlightenment is not just a window manager for Linux/X11 and others, but also a whole suite of libraries to help you create beautiful user interfaces with much less work than doing it the old fashioned way and fighting with traditional toolkits, not to mention a traditional window manager. It covers uses from small mobile devices like phones all the way to powerful multi-core desktops (which are the primary development environment).
+
+	The Enlightenment Foundation Libraries (EFL) provide both a semi-traditional toolkit set in Elementary as well as the object canvas (Evas) and powerful abstracted objects (Edje) that you can combine, mix and match, even layer on top of each other with alpha channels and events in-tact. It has 3D transformations for all objects and more.
+licenses			BSD
+
+home				www.enlightenment.org
+packages			enlightenment-0.17.0
+
+needs
+	Eina
+	EET
+	Evas
+	FreeType > 2.1.7
+	ECore
+	Embryo
+	Edje
+	EFreet
+	E-DBus
+recommends
+	PM-Utilities
+	ALSA
+	ConnMan
+
+; To run Wayland programs on Enlightenment:
+;configure-options	--enable-wayland-clients
+
+post-install
+	mv /resources/Enlightenment-DR17/include/enlightenment/* /resources/Enlightenment-DR17/framework/headers/enlightenment/ &&
+	rmdir /resources/Enlightenment-DR17/include/enlightenment/ &&
+	rmdir /resources/Enlightenment-DR17/include/
+
+documentation
+	README ABOUT-NLS COPYING AUTHORS TODO
+;	doc/
+;	Empty:
+;	NEWS ChangeLog
+build-docs			INSTALL
+
+links
+	programs/		bin
+	data/			share

@@ -1,0 +1,40 @@
+authors				Kaj de Vos
+status				testing
+warnings			Doesn't install headers.
+
+headline			Password management suite
+description
+	Suite of system tools for managing user passwords.
+licenses			BSD | Artistic
+
+home				pkg-shadow.alioth.debian.org
+locations
+	ftp://pkg-shadow.alioth.debian.org/pub/pkg-shadow/old/
+	http://anduin.linuxfromscratch.org/sources/LFS/lfs-packages/development/
+
+recommends
+	cracklib
+	skey
+conflicts
+;	su, groups:
+	coreutils
+;	Chinese and Korean:
+	man-db
+
+no-sysconfdir
+configure-options
+;	--libdir=/lib
+	--sysconfdir=/etc
+	--enable-shared
+	--without-selinux
+;	--with-libcrack
+
+system-prefix-var	DESTDIR
+
+documentation
+	README ABOUT-NLS COPYING NEWS ChangeLog TODO
+;	doc/*
+
+links
+	programs/login	/bin/
+;	programs/su		/bin/

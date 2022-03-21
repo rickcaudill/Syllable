@@ -1,0 +1,67 @@
+authors
+	John Aspras
+	Kaj de Vos
+maintainers			Kaj de Vos
+status				testing
+
+inherits			sourceforge
+
+headline			7-Zip file packer
+description
+	7-Zip is a file archiver with highest compression ratio. p7zip is a port of 7za.exe for POSIX systems.
+licenses			LGPL CPL other
+
+home
+;	www.7-zip.org
+	p7zip.sourceforge.net
+packages			p7zip/p7zip_9.04_src_all
+
+install-prefix-var	DEST_HOME
+
+; For parallel build:
+;make-file			makefile.parallel_jobs
+;make-options		-j4
+make-targets
+	all3
+;;	all2
+;;	all
+;	7z
+;;	7zr
+;;	sfx
+
+test-targets
+	test
+	test_7z
+	test_7zr
+
+system-prefix-var	DEST_DIR
+install-tree
+	programs
+	framework/libraries
+	manuals
+install
+	true
+;	./install.sh
+install-files
+	bin/7z.so		framework/libraries/
+;	Can't load plug-in in framework/libraries/, but seems to be a caching problem:
+;	bin/7z.so		programs/
+;	Doesn't work on Syllable 0.6.6:
+;	bin/7z			programs/
+	bin/7z			programs/7zs
+	bin/7za			programs/
+	bin/7zr			programs/
+;	bin/Formats		programs/
+	bin/Codecs		programs/
+	bin/7zCon.sfx	programs/
+	man1/			manuals/
+
+documentation
+	README DOCS/readme.txt DOCS/7zC.txt DOCS/License.txt DOCS/copying.txt DOCS/unRarLicense.txt DOCS/history.txt ChangeLog TODO
+	DOCS/MANUAL
+develop-docs		DOCS/lzma.txt
+internal-docs		DOCS/7zFormat.txt DOCS/Methods.txt
+
+links
+	../framework/libraries/7z.so	programs/
+	7za								programs/7z

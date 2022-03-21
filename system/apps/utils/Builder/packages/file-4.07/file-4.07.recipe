@@ -1,0 +1,7 @@
+authors				Kaj de Vos
+
+patch-config
+
+build-dir			.
+documentation		README LEGAL.NOTICE ChangeLog MAINT
+

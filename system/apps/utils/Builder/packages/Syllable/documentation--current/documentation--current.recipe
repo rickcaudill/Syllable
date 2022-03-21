@@ -1,0 +1,15 @@
+authors				Kaj de Vos
+
+files
+	documentation/screen.css
+	documentation/Syllable-logo.png
+	Desktop/Installation.html
+	Desktop/Welcome.html
+	Desktop/Changes.html
+	documentation/Copyrights.html
+	documentation/FAQ.html
+
+documentation
+	screen.css Syllable-logo.png
+	Installation.html Welcome.html Changes.html
+	Copyrights.html FAQ.html

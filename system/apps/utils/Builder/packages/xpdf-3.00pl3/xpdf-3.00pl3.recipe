@@ -1,0 +1,38 @@
+authors				Kaj de Vos
+status				testing
+
+headline			Portable Document Format (PDF) viewer
+description
+	Xpdf is an open source viewer for Portable Document Format (PDF) files. (These are also sometimes also called 'Acrobat' files, from the name of Adobe's PDF software.) The Xpdf project also includes a PDF text extractor, PDF-to-PostScript converter, and various other utilities.
+
+	Xpdf is designed to be small and efficient. It can use Type 1, TrueType, or standard X fonts.
+licenses			GPL-2
+
+home				www.foolabs.com/xpdf/
+locations
+	http://downloads.syllable.org/sources/resources/X-PDF/
+;	Have only the last version:
+	ftp://ftp.foolabs.com/pub/xpdf/
+packages			xpdf-3.00
+
+;needs
+;	On X11 systems:
+;	lesstif
+build-needs			GNU-CompilerCollection < 4
+recommends
+	t1lib
+;	Uses internal headers:
+	FreeType >= 2.0.5 < 2.2
+
+build-dir			.
+
+configure-options
+	--with-freetype2-includes=/resources/FreeType/framework/headers/freetype2
+;	--with-freetype2-includes=/system/index/framework/headers/freetype2
+;	--enable-multithreaded
+	--enable-a4-paper
+
+documentation
+	README COPYING ANNOUNCE CHANGES
+;	doc/*
+build-docs			INSTALL

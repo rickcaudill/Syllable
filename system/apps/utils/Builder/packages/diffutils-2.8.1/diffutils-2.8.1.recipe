@@ -1,0 +1,15 @@
+authors				Kaj de Vos
+
+inherits			gnu
+
+licenses			GPL
+home				www.gnu.org/software/diffutils/
+packages			diffutils/diffutils-2.8.1
+
+patch-config		config
+
+no-datarootdir
+
+system-prefix-var	DESTDIR
+
+documentation		README COPYING ABOUT-NLS NEWS ChangeLog AUTHORS THANKS

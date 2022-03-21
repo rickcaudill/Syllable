@@ -1,0 +1,13 @@
+authors				Kaj de Vos
+status				testing
+
+_build-needs
+;	AutoConfigure >= 2.63
+	AutoConfigure 2.68
+;	AutoMake
+	AutoMake 1.11.1
+	LibraryTool
+;	LibraryTool 2.4
+	PackageConfigure
+; Won't build after reconfiguring:
+;make-shared

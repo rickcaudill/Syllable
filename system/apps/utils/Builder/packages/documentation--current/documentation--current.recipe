@@ -1,0 +1,16 @@
+authors				Kaj de Vos
+
+headline			System documentation
+description			Syllable's installation, welcome, copyrights and FAQ documents.
+licenses			other
+
+home				syllable.org
+locations			http://web.syllable.org/
+
+make				true
+
+install-tree
+install				true
+
+move-files			documentation/* /documentation/
+delete-files		documentation

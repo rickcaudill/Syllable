@@ -1,0 +1,41 @@
+authors				Kaj de Vos
+status				testing
+
+; autoreconf bombs out:
+;make-shared
+
+configure-options
+;	--with-shared
+;	--without-debug
+;	--enable-reentrant
+;	--with-pthread
+;	--with-termlib
+	--enable-widec
+	--enable-symlinks
+;	Linking the C++ demo fails with undefined SjLj symbols which are in libgcc_s.so:
+	--without-cxx-binding
+
+links
+;	For older packages:
+	libncursesw.a				framework/libraries/libncurses.a
+;	No C++ at the moment:
+;	libncurses++w.a				framework/libraries/libncurses++.a
+	libcursesw.a				framework/libraries/libcurses.a
+	libformw.a					framework/libraries/libform.a
+	libpanelw.a					framework/libraries/libpanel.a
+	libmenuw.a					framework/libraries/libmenu.a
+;	libncurses.so				framework/libraries/libcurses.so
+	libncursesw.a				framework/libraries/libcursesw.a
+	libncurses.a				framework/libraries/libcurses.a
+	ncursesw/ncurses.h			framework/headers/
+	ncursesw/curses.h			framework/headers/
+	ncursesw/term.h				framework/headers/
+;	For Python:
+	ncursesw/panel.h			framework/headers/
+;	For INetUtils:
+;	framework/headers/ncursesw/	/usr/include/
+;	For LinuxTree:
+	programs/clear				/usr/bin/
+;	For S-Lang:
+;	data/terminfo/				/usr/share/
+	ncursesw5-config			programs/ncurses5-config

@@ -1,0 +1,23 @@
+authors				Kaj de Vos
+status				testing
+
+inherits			Linux-2.6.27.44
+
+configure
+;	Make built Linux source available from the host system for external kernel modules:
+	sudo mkdir --parents /lib/modules/2.6.27.44-Syllable &&
+	sudo rm --force /lib/modules/2.6.27.44-Syllable/build &&
+	sudo ln -s $PWD /lib/modules/2.6.27.44-Syllable/build &&
+;	Make the kernel modules installation go into the package location in the system image.
+;	At first the kernel modules will be in the traditional subdirectory,
+;	where depmod needs to find them.
+	sudo ln -sf ../../system/resources/Linux/2.6.27.44/lib/modules/2.6.27.44-Syllable $IMAGE/lib/modules/
+
+; Only headers would be there in a full system build:
+;merge-install
+
+links
+;	For linux-fusion:
+;	framework/headers/linux																	/usr/include/
+;	Get external kernel modules to install themselves among this kernel's modules:
+	../../system/resources/Linux/2.6.27.44/framework/libraries/modules/2.6.27.44-Syllable	/lib/modules/

@@ -1,0 +1,15 @@
+authors				Kaj de Vos
+status				testing
+
+recommends
+	alsa-library >= 0.9.0
+	DirectFrameBuffer >= 0.9.15
+
+_configure-options
+;	--disable-video-fbcon
+	--disable-video-directfb
+
+pre-register
+	sudo sed -i s~/system/resources/SDL/1.2.14~/system/index~		programs/sdl-config &&
+	sudo sed -i s~/system/development/resources/SDL/1.2.14~/system/index~	programs/sdl-config &&
+	sudo sed -i s~/resources/SDL~/resources/index~						programs/sdl-config

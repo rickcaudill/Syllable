@@ -1,0 +1,33 @@
+authors				Kaj de Vos
+status				testing
+
+inherits			Enlightenment--current
+
+headline			Enlightenment's thumbnailing library and DBus service
+description
+	Thumbnail generation library:
+
+	- Create thumbnails with a predefined frame (possibly an edje frame);
+	- Have an option to create fdo-like thumbnails;
+	- Have a client/server utility.
+licenses			LGPL-2.1
+
+home				trac.enlightenment.org/e/wiki/Ethumb
+packages			ethumb-1.7.5
+
+needs
+	Eina
+	Evas
+	ECore
+	Edje
+recommends
+	E-DBus
+	Emotion
+
+;configure-options	--enable-emotion
+
+documentation
+	README ABOUT-NLS COPYING AUTHORS TODO
+;	doc/
+;	Empty:
+;	NEWS ChangeLog

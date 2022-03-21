@@ -1,0 +1,26 @@
+authors				Kaj de Vos
+
+inherits			XOrg
+
+;version				1.0.7
+version				1.0.6
+headline			X11 Tab Window Manager
+description
+	twm is a window manager for the X Window System. It provides titlebars, shaped windows, several forms of icon management, user-defined macro functions, click-to-type and pointer-driven keyboard focus, and user-specified key and pointer button bindings.
+
+;packages			app/twm-1.0.7
+packages			app/twm-1.0.6
+
+needs
+	LibraryX11
+	LibraryXExtensions
+	LibraryXICExchange
+	LibraryXSessionManager
+	LibraryXToolkit
+	LibraryXMiscUtilities
+build-needs
+	XProtocol >= 7.0.17
+run-needs
+	XOrg-Server
+
+documentation		README COPYING ChangeLog

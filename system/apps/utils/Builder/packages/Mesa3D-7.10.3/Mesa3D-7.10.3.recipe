@@ -1,0 +1,52 @@
+authors
+	Jamie Clarkson
+	Kaj de Vos
+maintainers			Kaj de Vos
+status				testing
+
+headline			3D Graphics Library
+description
+	Mesa is an open-source implementation of the OpenGL specification - a system for rendering interactive 3D graphics. A variety of device drivers allows Mesa to be used in many different environments ranging from software emulation to complete hardware acceleration for modern GPUs.
+licenses			MIT LGPL other
+
+home				www.mesa3d.org
+locations			ftp://ftp.freedesktop.org/pub/mesa/
+packages
+	7.10.3/MesaLib-7.10.3
+;	7.10.3/MesaGLUT-7.10.3
+;	demos/8.0.1/mesa-demos-8.0.1
+
+; For DRI:
+;needs				Expat
+build-needs
+	makedepend
+	Python
+;	With Python module:
+	LibraryXML2
+build-recommends
+	PackageConfigure
+	SEd
+	FLex
+	Bison
+;	For 32 bits build on 64 bits system:
+	File
+conflicts			PicoGL
+
+build-dir			.
+
+configure-options
+;	Not enough:
+;	--without-x
+;	Needs X:
+	--disable-egl
+	--with-driver=osmesa
+;	--with-driver=xlib
+;	--with-driver=dri
+;	--enable-gl-osmesa
+
+system-prefix-var	DESTDIR
+
+documentation		docs/*
+
+; For Evas:
+links				libOSMesa.so.7 framework/libraries/libOSMesa.so.1

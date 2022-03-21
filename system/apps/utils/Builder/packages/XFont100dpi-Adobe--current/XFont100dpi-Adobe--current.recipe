@@ -1,0 +1,26 @@
+authors				Kaj de Vos
+warnings			Hardwired to install into /resources/!
+
+inherits			XOrg
+
+;version				1.0.3
+version				1.0.1
+headline			X11 fonts Adobe 100dpi
+description
+	Adobe 100dpi fonts for the X Window System.
+
+;packages			font/font-adobe-100dpi-1.0.3
+packages			font/font-adobe-100dpi-1.0.1
+
+build-needs
+	XFontUtilities
+	XFontBDF-to-PCF
+	XMakeFontDirectory
+
+configure-options
+	--with-fontrootdir=/resources/XFont100dpi-Adobe/data/fonts/X11
+;	--with-fontdir=/resources/index/data/fonts/X11/100dpi
+;	--with-compression= no|compress|gzip|bzip2
+;	--disable-all-encodings
+
+documentation		README COPYING ChangeLog

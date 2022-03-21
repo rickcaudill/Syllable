@@ -1,0 +1,10 @@
+authors				Kristian Van Der Vliet
+status				testing
+
+inherits			SPLix-2.0.0
+
+; SpliX is a CUPS driver so it makes sense to build it into CUPS:
+merge-install
+
+; Documentation currently doesn't conflict with CUPS:
+;documentation

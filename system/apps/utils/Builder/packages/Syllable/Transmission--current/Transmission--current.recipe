@@ -1,0 +1,13 @@
+authors
+	Kaj de Vos
+	Kristian Van Der Vliet
+status				developing
+warnings			Can't find download directory
+
+needs
+;	Due to LibEvent:
+	Syllable >= 0.6.3 <= 0.6.5
+	LibraryEvent
+	OpenSSL
+
+;make-shared

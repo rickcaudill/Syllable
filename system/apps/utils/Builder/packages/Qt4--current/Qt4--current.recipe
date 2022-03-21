@@ -1,0 +1,89 @@
+authors				Kaj de Vos
+status				testing
+warnings			Hardwired to install into /resources/!
+
+version				4.8.2
+headline			Cross-platform application and UI framework
+description
+	Qt is a cross-platform application and UI framework for developers using C++ or QML, a CSS & JavaScript like language.
+licenses			LGPL-2.1 GPL-3 FDL
+
+home
+	qt-project.org
+;	qt.nokia.com
+locations
+;	Release:
+	http://releases.qt-project.org/qt4/source/
+;	Older:
+	ftp://ftp.qt.nokia.com/qt/source/
+	ftp://ftp.trolltech.com/qt/source/
+	http://get.qt.nokia.com/qt/source/
+packages			qt-everywhere-opensource-src-4.8.2
+
+needs				X11
+recommends
+	ZLib
+	OpenSSL
+	DesktopBus
+	LibraryPNG
+	LibraryJPEG
+	LibraryTIFF
+	CUPS
+	SQLite
+	GLib
+build-recommends	PackageConfigure
+
+;configure-prefix	"-prefix "
+no-sbindir
+no-libexecdir
+no-includedir
+no-datarootdir
+no-mandir
+no-infodir
+configure-options
+;	-bindir			/resources/Qt4/programs
+	-plugindir		/resources/Qt4/framework/plugins
+	-headerdir		/resources/Qt4/framework/headers
+	-importdir		/resources/Qt4/framework/imports
+	-translationdir	/resources/Qt4/data/translations
+	-docdir			/resources/Qt4/documentation
+	-opensource
+	-confirm-license
+;	-release
+	-fast
+;	-optimized-qmake
+;	-platform linux-g++
+;	-embedded
+;	Embedded lite:
+;	-qpa
+;	Wants to target X otherwise in the non-embedded build:
+;	-no-gui
+;	-qt-gfx-directfb
+;	-plugin-gfx-directfb
+;	-graphicssystem raster
+;	-no-gfx-linuxfb
+;	-no-kbd-tty
+;	-no-mouse-linuxtp
+;	-D QT_NO_QWS_MULTIPROCESS
+;	-D QT_NO_SXE
+;	-no-feature-filesystemwatcher
+	-no-pch
+;	-no-mitshm
+;	-no-exceptions
+;	-no-glib
+;	-no-nis
+	-no-opengl
+	-no-webkit
+	-system-sqlite
+;	For KDE:
+;	-no-phonon
+;	-nomake tools
+	-nomake examples
+	-nomake demos
+;	Huge:
+	-nomake docs
+
+;system-prefix-var	INSTALL_ROOT
+
+documentation		README LICENSE.LGPL LGPL_EXCEPTION.txt LICENSE.GPL3 LICENSE.FDL changes-4.8.2
+build-docs			INSTALL

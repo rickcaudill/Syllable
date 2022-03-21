@@ -1,0 +1,18 @@
+authors
+	Jamie Clarkson
+	Kaj de Vos
+	Dee Sharpe
+status				testing
+notes
+	Doesn't build OSMesa and Glut.
+	Syllable GLView driver isn't compatible with 6.0.1.
+
+make-targets		syllable
+
+install-tree
+	include
+	include/gui
+install-files
+	lib									.
+	include/*							include/
+	src/mesa/drivers/syllable/GLView.h	include/gui/

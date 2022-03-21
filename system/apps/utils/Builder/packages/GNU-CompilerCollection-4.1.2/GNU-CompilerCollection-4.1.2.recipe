@@ -1,0 +1,79 @@
+authors				Kaj de Vos
+status				testing
+warnings
+	GCC has a circular dependency on GLibC.
+;	LibIberty is both in BinaryUtilities and in GCC.
+;	Smartly detects BinaryUtilities > 2.17 as < 2.14 and disables symbol versioning!
+notes				GMP with MPFR support is required to build Fortran
+
+inherits			gnu
+
+headline			The GNU Compiler Collection
+description
+	The GNU Compiler Collection includes front ends for C, C++, Objective-C, Fortran, Java, and Ada, as well as libraries for these languages (libstdc++, libgcj,...).
+licenses			GPL LGPL GFDL
+
+home				gcc.gnu.org
+;locations			ftp://gcc.gnu.org/pub/gcc/releases/gcc-4.1.2/
+packages
+	gcc/gcc-4.1.2/gcc-4.1.2
+;	gcc/gcc-4.1.2/gcc-core-4.1.2
+;	gcc/gcc-4.1.2/gcc-g++-4.1.2
+;	gcc/gcc-4.1.2/gcc-objc-4.1.2
+;	gcc/gcc-4.1.2/gcc-java-4.1.2
+;	gcc/gcc-4.1.2/gcc-g77-4.1.2
+;	gcc/gcc-4.1.2/gcc-ada-4.1.2
+;	gcc/gcc-4.1.2/gcc-testsuite-4.1.2
+
+needs
+;	For -O3 with -fpic: >= 2.13.1
+;	For symbol versioning: >= 2.14
+	BinaryUtilities >= 2.14
+	glibc
+;	For Fortran:
+;	GMP
+;conflicts			BinaryUtilities
+test-needs			DejaGNU >= 1.4.1
+install-needs
+;	GNU-CompilerCollection
+;	For documentation (only really needed for TreeLang?):
+;	libiberty can't find makeinfo:
+	TexInfo
+recommends			MkTemp
+;build-recommends	diffutils
+
+; Can't find some of its C headers:
+;no-includedir
+no-datarootdir
+
+make-vars
+	CFLAGS			-O
+	LIBCFLAGS		-O2
+	LIBCXXFLAGS		-O2
+;					GCC seems to set this automatically:
+;					' -fno-implicit-templates'
+make-targets
+;	Safest when compiling natively:
+	bootstrap
+;	For printed documentation:
+;	dvi
+
+;test-env
+;	TCL_LIBRARY		'/resources/TCL'
+;	DEJAGNULIBS		'/resources/GejaGNU'
+; Don't stop at errors:
+test-options		-k
+
+system-prefix-var	DESTDIR
+
+; Needs itself during installation, before registration:
+install-env
+	PATH			"$STAGE/index/programs:$STAGE/bootstrap/index/programs:$IMAGE/resources/GNU-CompilerCollection/programs:$IMAGE/system/resources/GNU-CompilerCollection/4.1.2/programs:$PATH"
+
+documentation
+	README FAQ faq.html BUGS bugs.html COPYING COPYING.LIB NEWS ChangeLog MAINTAINERS
+	ABOUT-NLS gcc/ABOUT-GCC-NLS
+build-docs			INSTALL
+
+; LFS prefers the one from BinaryUtilities:
+delete-files		framework/libraries/libiberty.a

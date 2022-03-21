@@ -1,0 +1,12 @@
+authors				Kaj de Vos
+status				testing
+
+patch
+;	For official source:
+;	sed -i s/libr3.lib/libr3.so/ make/makefile &&
+;	ln -s /resources/index/bin/r3 make/r3-make
+	ln -s /system/bin/r3 make/r3-make
+
+_make-vars
+	TO_OS TO_SYLLABLE
+	OS_ID 0.4.4

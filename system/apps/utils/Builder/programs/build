@@ -1,0 +1,2503 @@
+#! /usr/bin/env ruby
+
+# Syllable Build System
+# Version 0.12.3
+# Copyright (c) 2002-2013 Kaj de Vos
+# License: GPL 3 or any later version
+
+
+# Functions for single modules
+
+def prepare target
+	@log.header 'Creating staging area'
+
+	if exists? @stage
+		@log.header 'Deleting old staging area'
+		return false unless action @superInstall + 'rm --recursive --force ' + File.join(@stage, '*')
+	else
+		Dir.mkdir @stage
+	end
+
+	Dir.mkdir File.join(@stage, 'bootstrap')
+
+	for index in ['index', 'bootstrap/index']
+		Dir.mkdir File.join(@stage, index)
+
+		for dir in ['settings', 'programs', 'system-programs', 'applications', 'framework', 'data', 'tasks', 'manuals']
+			Dir.mkdir File.join(@stage, index, dir)
+		end
+	end
+
+	Dir.mkdir @image
+	Dir.mkdir File.join(@image, 'resources') unless @systemBuild  # Systems still have /usr/ link
+
+	action 'sync'
+end
+
+def downloadFile file
+	# Let mirror systems such as SourceForge provide a mirror but not try all of them
+#	if headers = action("curl --head --progress-bar --insecure --ftp-pasv --location --max-redirs 2 '#{file}'")
+	#GitHub now redirects to S3 which breaks head requests
+	if headers = action("curl --head --progress-bar --insecure --ftp-pasv '#{file}'")
+		unless result = (parseMap headers)['HTTP/1.1'] and
+			# Last header was "Not Found" or "Forbidden"
+			['404', '403'].include?((toNameValue result).first)
+		then
+			name = File.basename(file)[/[^?]*/]  # Cut possible HTTP request parameters
+
+#			if action "wget --passive-ftp --tries=5 '#{file}'"
+#			if action "curl --progress-bar --show-error --verbose --remote-name --ftp-pasv --retry 5 --connect-timeout <seconds> '#{file}'"
+
+			if action "curl --output '#{name}' --progress-bar --insecure --ftp-pasv --location --max-redirs 2 '#{file}'"
+				return exists?(name)  # Double check
+			end
+		end
+	end
+
+	false
+end
+
+def downloadModule target
+	name = commonName target
+
+	if
+		if (locations = (recipe = getRecipe target)['locations']) and
+			(packages = recipe['packages']) ?
+				(packages = firstColumn parseList(packages)) :
+				! (recipe['files'] or sourcePackageAvailable?(packages = name))
+		then
+			@log.subheader 'Downloading source package(s)'
+
+			Dir.chdir File.join(@configPath, 'downloading')
+
+			for package in packages
+				if package == 'archive/master' or ! sourcePackageAvailable? package  # Need to download
+					break if for location in toList locations
+						break unless for type in ['.tar.xz', '.txz', '.tar.bz2', '.tbz2', '.tar.gz', '.tgz', '.zip', '']
+							@log.subheader 'Trying ' + f = File.join(location, file = package + type)
+							file = File.basename file
+
+							break if downloadFile f and
+								# Detect web error pages and corrupt archives
+								action case type
+								when '.tar.xz', '.txz' then 'tar tJf ' + file
+								when '.tar.bz2', '.tbz2' then 'tar tjf ' + file
+								when '.tar.gz', '.tgz' then 'tar tzf ' + file
+								when '' then 'tar tf ' + file
+								when '.zip' then 'unzip -t ' + file  # 'zip -T ' + file
+								end
+						end
+					end
+
+					@log.subheader "Moving package #{file} to sources directory"
+					break unless action "mv #{file} " + (package == 'archive/master' ? File.join(@sourcesPath, name) : @sourcesPath)
+				end
+			end
+		else
+			recipe['locations'] or  # Allow location with files or without explicit package
+			recipe['packages'] or  # Allow package without locations
+			exists? target or  # Already installed
+			# Get it from a repository
+			action('mkdir --parents ' + (dir = File.dirname target)) &&
+			begin  # We have a destination dir
+				Dir.chdir dir  # if target['/']
+
+				@log.subheader 'Checking out sources from CVS repository'
+				action 'cvs -q checkout -P -d ' + File.basename(target) +
+					(@revision ? " -r #{@revision} " : ' ') +
+					File.join(@cvsPath, target)
+			end
+		end
+	then
+		Dir.chdir @workDir
+		action 'sync'
+	else
+		@log.failure target
+		false
+	end
+end
+
+def getFiles target
+	not files = (recipe = getRecipe target)['files'] or
+	if
+		unless locations = recipe['locations']
+			@log.error 'No download locations specified'
+			false
+		else
+			@log.subheader 'Downloading source file(s)'
+
+			(exists? target or action 'mkdir --parents ' + target) and
+			begin  # We have a destination dir
+				Dir.chdir target
+
+				for file in toList files
+					break if for location in toList locations
+						@log.subheader 'Trying ' + f = File.join(location, file)
+						break if downloadFile f
+					end
+				end
+			end
+		end
+	then
+		Dir.chdir @workDir
+		action 'sync'
+	else
+		@log.error 'Failed to download files'
+		false
+	end
+end
+
+def updateModule target
+	if
+		if exists? target and (Dir.chdir target; exists? 'CVS') and not
+			begin
+				@log.subheader 'Updating sources from CVS repository'
+
+				action 'cvs -q update -dP' + (@revision ? ' -r ' + @revision : '') or
+				begin
+					@log.error 'Failed to update from CVS repository'
+					false
+				end
+			end
+		then
+			false
+		else getFiles(target)  # or
+#			begin
+#				@log.error 'No CVS repository or source files available; unable to update'
+#				false
+#			end
+		end
+	then
+		action 'sync'
+	else
+		@log.failure target
+		false
+	end
+end
+
+def unpackModule target
+	name = commonName target
+
+	exists? target or  # Already there
+	(packages = (packages = (recipe = getRecipe target)['packages']) ?
+		parseList(packages) :
+		recipe['files'] ? [] : name  # packages + files requires explicit packages specification
+	) == [] or
+	if
+		(exists? dir = File.dirname(target) or action 'mkdir --parents ' + dir) and
+		begin  # We have a destination parent directory
+			@log.subheader 'Unpacking source package(s)'
+
+			Dir.chdir File.dirname(target)  # if target['/']
+
+			files = []
+
+			unless
+				for package in packages
+					package, dir = package.split
+					base = File.join @sourcesPath, package == 'archive/master' ? name : File.basename(package)  # Version control checkout?
+					option = dir ? ' --directory=' + dir : ''
+
+					if dir and not exists? dir
+						break unless action 'mkdir --parents ' + dir
+					end
+
+#					file = Dir[File.join(@sourcesPath, fullName target) + '.*'] [0]
+#					case File.basename file
+
+					if exists? file = base + '.zip'
+						type = :zip
+						break unless action 'unzip ' + file + (dir ? ' -d ' + dir : '')
+					elsif exists? file = base + '.tar.xz' or exists? file = base + '.txz'
+						type = :xz
+						break unless action "tar#{option} -xJf " + file
+					elsif exists? file = base + '.tar.bz2' or exists? file = base + '.tbz2'
+						type = :bzip
+						break unless action "tar#{option} -xjf " + file
+					elsif exists? file = base + '.tar.gz' or exists? file = base + '.tgz'
+						type = :gzip
+						break unless action "tar#{option} -xzf " + file
+					elsif exists? file = base
+						type = :tar
+						break unless action "tar#{option} -xf " + file
+					else
+						@log.error "Source package #{base}.* not found"
+						break
+					end
+
+					files << [file, type]
+					action 'sync'
+				end
+			then
+				false
+			else
+				if exists? dir = fullName(target)
+					true
+				else  # Source package content has a deviating subdirectory name
+					@log.subheader 'Renaming source'
+
+					file, type = files.first
+					result = `#{case type
+						when :zip	then 'unzip -lqq ' + file
+						when :xz	then 'tar tJf ' + file
+						when :bzip	then 'tar tjf ' + file
+						when :gzip	then 'tar tzf ' + file
+						when :tar	then 'tar tf ' + file
+						end
+					}`
+					unless (status = $? >> 8) == 0
+						@log.error status
+						false
+					else
+						# Get the directory name from the package listing
+						file = type == :zip ?
+							parseList(result).first.split.last.split('/').first :
+							result.split.first.split('/').first
+
+						unless dir? file
+							@log.error 'Package does not contain an enveloping folder'
+							false
+						else
+							action "mv #{file} " + dir
+						end
+					end
+				end
+			end
+		end
+	then
+		Dir.chdir @workDir
+		action 'sync'
+	else
+		@log.failure target
+		false
+	end
+end
+
+def patchModule target
+	not exists? target or  # No source
+	if
+		begin
+			Dir.chdir target
+
+			unless
+				(lineage = lineage target).each_with_index {|kin, i|
+					if exists? file = File.join(recipePath(kin), fullName(kin) + '.patch')
+						@log.header 'Applying patch from ancestor ' + kin
+						break unless action 'patch --strip=1 < ' + file
+					end
+
+					if exists? dir = File.join(recipePath(kin), 'patches')
+						@log.header 'Overlaying extra source files from ancestor ' + kin
+						break unless action "cp -a #{File.join dir, '*'} ." and
+							# FIXME: crude way to remove possible CVS dirs from patches
+							deleteCruft ''
+					end
+				}
+			then
+				false
+			else
+				unless
+					if dirs = (recipe = getRecipe target)['patch-config']
+						@log.header 'Patching configuration'
+						files = File.join @configPath, 'config/config.*'
+
+						if dirs == ''
+							action "cp -a --force #{files} ."
+						else
+							for dir in toList dirs
+								break unless action "cp -a --force #{files} #{dir}/"
+							end
+						end
+					elsif dir = recipe['patch-legacy-config']
+						@log.header 'Patching configuration'
+
+						action "cp -a #{File.join @configPath, 'config/legacy/*'} " +
+							(dir == '' ? '.' : dir)
+					else
+						true
+					end
+				then
+					false
+				else
+					unless
+						not cmdLines = recipe['patch'] or
+						begin
+							@log.header 'Executing patch instructions'
+							action toCommands(cmdLines)
+						end
+					then
+						false
+					else
+						not recipe['make-shared'] or
+						begin
+							@log.header 'Enabling shared libraries'
+							action 'libtoolize --force --copy' and
+								action 'autoreconf'
+						end
+					end
+				end
+			end
+		end
+	then
+		Dir.chdir @workDir
+		action 'sync'
+	else
+		@log.failure target
+		false
+	end
+end
+
+def deleteModule target
+	not exists? target or
+	if
+		begin
+			@log.header 'Deleting source'
+			action 'rm --recursive --force ' + target
+		end
+	then
+		action 'sync'
+	else
+		@log.error 'Failed to delete source'
+		@log.failure target
+		false
+	end
+end
+
+def getModule target
+	exists? target or
+	begin
+		@log.subheader 'Installing source'
+
+		downloadModule(target) and unpackModule(target) and getFiles(target) and patchModule(target)
+	end or
+	begin
+		@log.error 'Source not (completely) installed'
+		# FIXME: cascading error reporting
+		@log.failure target
+		false
+	end
+end
+
+def configureModule staging, target
+	Dir.chdir target
+
+	if native? target
+		@log.header 'Building dependencies'
+
+		action makeCommand(target) + ' deps'
+		# Continue building even if dependencies failed
+		action 'sync'
+	else
+		if
+			if cmdLines = (recipe = getRecipe target)['configure']
+				@log.header 'Configuring'
+				action toCommands(cmdLines)
+			else
+				unless exists? cmd = configureCommand(target) or recipe['configure-cmd']
+					true  # Nothing to be done here
+				else
+					unless exists? dir = buildDir(target) or
+						begin
+							@log.header 'Creating build directory'
+							action 'mkdir ' + dir
+						end
+					then
+						false
+					else
+						@log.header 'Configuring'
+
+						# Some ports require an absolute path to the configure command
+						cmd = File.join(Dir.getwd, cmd) unless cmd[/\s/]
+						Dir.chdir dir
+	
+						if exists? 'config.cache' and not action 'rm config.cache'
+							false
+						else
+							if cmdLines = recipe['pre-configure'] and not action toCommands(cmdLines)
+								false
+							else
+								action(((vars = recipe['configure-env']) ? toVariables(vars) + ' ' : '') +
+									cmd +
+									((vars = recipe['configure-vars']) ? ' ' + toVariables(vars) : '') +
+									(@crossCompile ? " --build=#{@machType} --host=" + @target : '') +
+									((args = recipe['configure-args']) ?
+										' ' + toString(args) :
+										((p = recipe['configure-prefix']) ?
+											' ' + p[1..-2] :  # FIXME: do some checking
+											' --prefix='
+										) + (root = prefix staging, target) +
+										(imaging?(staging) && ! recipe['system-prefix-var'] ?
+											'' :
+											(recipe['no-sysconfdir'] ? '' :
+												' --sysconfdir=' + File.join(root, 'settings')
+											) +
+											(recipe['no-bindir'] ? '' :
+												' --bindir=' + File.join(root, 'programs')
+											) +
+											(recipe['no-sbindir'] ? '' :
+												' --sbindir=' + File.join(root, 'system-programs')
+											) +
+											(recipe['no-libdir'] ? '' :
+												' --libdir=' + File.join(root, 'framework/libraries')
+											) +
+											(recipe['no-libexecdir'] ? '' :
+												' --libexecdir=' + File.join(root, 'framework/executables')
+											) +
+											(recipe['no-includedir'] ? '' :
+												' --includedir=' + File.join(
+													(system?(staging) ?
+														File.join(
+															'/system/development/resources',
+															installName(target), version(target)
+														) :
+														root
+													),
+													'framework/headers'
+												)
+											) +
+											(recipe['no-datarootdir'] ? '' :
+												' --datarootdir=' + File.join(root, 'data')
+											) +
+											(recipe['no-datadir'] ? '' :
+												' --datadir=' + File.join(root, 'data')
+											) +
+											(recipe['no-mandir'] ? '' :
+												' --mandir=' + File.join(root, 'manuals')
+											) +
+											(recipe['no-infodir'] ? '' :
+												' --infodir=' + File.join(root, 'manuals/info')
+											)
+											# Many packages don't have this:
+											#(recipe['no-docdir'] ? '' :
+											#	' --docdir=' + File.join(root, 'documentation')
+											#)
+										)
+									) +
+									((options = recipe['configure-options']) ? ' ' + toString(options) : '')
+								)
+							end
+						end
+					end
+				end
+			end
+		then
+			action 'sync'
+		else
+			@log.failure target
+			false
+		end
+	end
+end
+
+def cleanModule target
+	if
+		not exists? dir = buildDir(target) or
+		if dir[0, 2] == '..'  # External build dir
+			@log.header 'Deleting build directory'
+			action 'rm --recursive --force ' + dir
+		else
+			Dir.chdir dir
+			action makeCommand(target) + ' clean'
+		end
+	then
+		action 'sync'
+	else
+#		@log.failure target
+		false
+	end
+end
+
+def makeModule staging, target
+	return true if exists? 'image'
+
+	recipe = getRecipe target
+	configured = native?(target) || recipe['configure'] || recipe['configure-cmd'] ||
+		exists?(File.join(sourcePath(target), configureCommand(target)))
+	if exists? dir = buildDir(target) then Dir.chdir dir end
+
+	if
+		(not (cmdLines = recipe['pre-make']) or action toCommands(cmdLines)) and
+		action(if cmdLines = recipe['make']
+			toCommands cmdLines
+		else
+			((vars = recipe['make-env']) ? toVariables(vars) + ' ' : '') +
+			makeCommand(target) +
+			(configured ?
+				'' :
+				" #{(var = recipe['install-prefix-var']) ? var : 'prefix'}=" + prefix(staging, target)
+			) +
+			((vars = recipe['make-vars']) ? ' ' + toVariables(vars) : '') +
+			((options = recipe['make-options']) ? ' ' + toString(options) : '') +
+			((targets = recipe['make-targets']) ? ' ' + toString(targets) : '')
+		end) and
+		(not (cmdLines = recipe['post-make']) or action toCommands(cmdLines))
+	then
+		action 'sync'
+	else
+		@log.failure target
+		false
+	end
+end
+
+def testModule target
+	return true if exists? 'image'
+
+	if exists? dir = buildDir(target) then Dir.chdir dir end
+
+	if action makeCommand(target) + ' ' +
+		((options = (recipe = getRecipe(target))['test-options']) ? toString(options) + ' ' : '') +
+		((targets = recipe['test-targets']) ? toString(targets) : 'check')
+	then
+		action 'sync'
+	else
+		@log.failure target
+		false
+	end
+end
+
+def installModule staging, target
+	root = installPath staging, target
+	name = shortName target
+	superAccess = staging && ! (@systemBuild and imaging? staging) ? '' : @superAccess
+
+	if
+		if target =~ /\.(resource|zip)$/ and exists? target  # A distribution package
+			# Packages are currently supposed to contain an unversioned directory
+			root = File.join(dir = File.dirname(root), name)
+
+			! exists?(root) ||
+			begin
+				@log.header 'Uninstalling ' + name
+
+				uninstallModule staging, target  # FIXME: double failure logging!
+			end and
+			begin  # TODO?: evaluate staging, recipe for super access
+				@log.header 'Unpacking ' + target
+
+				action superAccess + "unzip '#{target}' -d '#{dir}'" and
+				registerModule staging, superAccess, name, root
+			end
+		elsif native? target
+			Dir.chdir target
+
+			if exists? 'image'  # Command-line resource module without makefile
+				! exists?(root) ||
+				begin
+					@log.header 'Uninstalling ' + name
+
+					uninstallModule staging, target  # FIXME: double failure logging!
+				end and
+				begin
+					@log.header 'Installing image files'
+
+					action superAccess + "mkdir " + root and
+					copyDir 'image', root, superAccess and
+					registerModule staging, superAccess, target, root
+				end
+			else
+				if exists? dir = buildDir(target) then Dir.chdir dir end
+
+				unless staging
+					action superAccess + makeCommand(target) + ' install'
+				else
+					action superAccess + makeCommand(target) + ' dist' and
+					begin
+#						@log.header 'Installing documentation'
+
+#						if action superAccess + makeCommand(target) + ' doc'
+#							action superAccess + makeCommand(target) + ' install-doc'
+#						end
+
+						true
+					end
+				end
+			end
+		else
+			superAccess = @superAccess if (recipe = getRecipe target)['super-install']
+
+			! exists?(root) ||
+			begin
+				if recipe['merge-install']
+					unregisterModule staging, superAccess, installName(target), root
+				elsif staging or not firstColumn(parseList(recipe['install-needs'])).include? name
+					@log.header 'Uninstalling ' + name
+
+					uninstallModule staging, target  # FIXME: double failure logging!
+				else
+					@log.error "Won't uninstall current version because package needs itself to install"
+					false
+				end
+			end and
+			begin
+				! (dirs = recipe['install-tree']) ||
+				begin
+					@log.header 'Creating subdirectories'
+					@log.detail root
+
+					action superAccess + 'mkdir --parents ' + root and
+					for dir in toList dirs
+						@log.detail d = File.join(root, dir)
+						break unless action superAccess + 'mkdir --parents ' + d
+					end
+				end and
+				if not exists? target
+					# Some modules live exclusively in Builder, without a source package
+					@log.header 'No source available'
+					true
+				else
+					@log.header 'Doing the installation'
+
+					Dir.chdir target
+					configured = recipe['configure'] || recipe['configure-cmd'] ||
+						exists?(File.join(sourcePath(target), configureCommand(target)))
+					if exists? dir = buildDir(target) then Dir.chdir dir end
+
+					if imaging? staging and not recipe['system-prefix-var']
+						@log.warning 'Doing an image installation without a system-prefix-var.'
+					end
+
+					action(
+						if cmdLines = recipe['install']
+							toCommands cmdLines
+						else
+							((vars = recipe['install-env']) ? toVariables(vars) + ' ' : '') +
+							superAccess + makeCommand(target) +
+							(! imaging?(staging) && configured ?
+								'' :
+								((p = recipe['system-prefix-var']) && configured ?
+									'' :
+									" #{(var = recipe['install-prefix-var']) ? var : 'prefix'}=" +
+										(p ? prefix(staging, target) : root)
+								) +
+								(p ? " #{p}=" + @image : '')
+							) +
+							((vars = recipe['install-vars']) ? ' ' + toVariables(vars) : '') +
+							' ' + ((targets = recipe['install-targets']) ? toString(targets) : 'install')
+						end
+					) and
+					begin
+						# make install may have changed the working directory:
+						Dir.chdir @workDir
+						Dir.chdir target
+						if exists? dir = buildDir(target) then Dir.chdir dir end
+
+						! (cmdLines = recipe['post-install']) ||
+						begin
+							@log.header 'Executing post-installation instructions'
+							action toCommands(cmdLines)
+						end and
+						! (files = recipe['install-files']) ||
+						begin
+							@log.header 'Installing files'
+
+							for line in parseList files
+								source, destination = line.split
+
+								next if destination[0, 1] == '/' and staging and not imaging? staging
+
+								break unless copyFiles source, File.join(
+									destination[0, 1] == '/' ? @image : root,
+									destination
+								), superAccess
+							end
+						end and
+						(docs = "#{toString recipe['documentation']} #{toString recipe['develop-docs']}") == ' ' ||
+						begin
+							@log.header 'Installing documentation'
+
+							exists?(dir = File.join(root, 'documentation')) ||
+							begin
+								@log.detail dir
+								action superAccess + 'mkdir ' + dir
+							end and
+							begin
+								Dir.chdir @workDir
+								Dir.chdir target
+								copyFiles docs, dir, superAccess
+							end
+						end and
+						begin
+							Dir.chdir root
+
+							! exists?('etc') ||
+							if exists? 'settings'
+								@log.warning 'Merging extra settings into standard location'
+
+								action superAccess + 'mv etc/* settings/' and
+								begin
+									@log.header 'Deleting empty etc directory'
+									action superAccess + 'rmdir etc'
+								end
+							else
+								@log.warning 'Moving settings to standard location'
+								action superAccess + 'mv etc/ settings'
+							end and
+							! exists?('bin') ||
+							if exists? 'programs'
+								@log.warning 'Merging extra programs into standard location'
+
+								action superAccess + 'mv bin/* programs/' and
+								begin
+									@log.header 'Deleting empty bin directory'
+									action superAccess + 'rmdir bin'
+								end
+							else
+								@log.header 'Moving programs to standard location'
+								action superAccess + 'mv bin/ programs'
+							end and
+							! exists?('sbin') ||
+							if exists? 'system-programs'
+								@log.warning 'Merging extra system programs into standard location'
+
+								action superAccess + 'mv sbin/* system-programs/' and
+								begin
+									@log.header 'Deleting empty sbin directory'
+									action superAccess + 'rmdir sbin'
+								end
+							else
+								@log.header 'Moving system programs to standard location'
+								action superAccess + 'mv sbin/ system-programs'
+							end and
+							! exists?('lib') ||
+							if exists? 'framework/libraries'
+								@log.warning 'Merging extra libraries into standard location'
+
+								action superAccess + 'mv lib/* framework/libraries/' and
+								begin
+									@log.header 'Deleting empty lib directory'
+									action superAccess + 'rmdir lib'
+								end
+							else
+								exists?('framework') ||
+								begin
+									@log.header 'Creating framework directory'
+									action superAccess + 'mkdir framework'
+								end and
+								begin
+									@log.warning 'Moving libraries to standard location'
+									action superAccess + 'mv lib/ framework/libraries'
+								end
+							end and
+							! exists?('libexec') ||
+							if exists? 'framework/executables'
+								@log.warning 'Merging extra executables into standard location'
+
+								action superAccess + 'mv libexec/* framework/executables/' and
+								begin
+									@log.header 'Deleting empty libexec directory'
+									action superAccess + 'rmdir libexec'
+								end
+							else
+								exists?('framework') ||
+								begin
+									@log.header 'Creating framework directory'
+									action superAccess + 'mkdir framework'
+								end and
+								begin
+									@log.warning 'Moving executables to standard location'
+									action superAccess + 'mv libexec/ framework/executables'
+								end
+							end and
+							! exists?('include') ||
+							if exists? 'framework/headers'
+								@log.warning 'Merging extra headers into standard location'
+
+								action superAccess + 'mv include/* framework/headers/' and
+								begin
+									@log.header 'Deleting empty include directory'
+									action superAccess + 'rmdir include'
+								end
+							else
+								exists?('framework') ||
+								begin
+									@log.header 'Creating framework directory'
+									action superAccess + 'mkdir framework'
+								end and
+								begin
+									@log.header 'Moving headers to standard location'
+									action superAccess + 'mv include/ framework/headers'
+								end
+							end and
+							! exists?('share') ||
+							if exists? 'data'
+								@log.warning 'Merging extra data into standard location'
+
+								action superAccess + 'mv share/* data/' and
+								begin
+									@log.header 'Deleting empty share directory'
+									action superAccess + 'rmdir share'
+								end
+							else
+								@log.warning 'Moving generic shared data to standard location'
+								action superAccess + 'mv share/ data'
+							end and
+							! exists?('data/aclocal') ||
+							if exists? 'framework/AutoConfigure'
+								@log.header 'Merging extra AutoConfigure data into standard location'
+
+								action superAccess + 'mv data/aclocal/* framework/AutoConfigure/' and
+								begin
+									@log.header 'Deleting empty data/aclocal directory'
+									action superAccess + 'rmdir data/aclocal'
+								end
+							else
+								exists?('framework') ||
+								begin
+									@log.header 'Creating framework directory'
+									action superAccess + 'mkdir framework'
+								end and
+								begin
+									@log.header 'Moving AutoConfigure data to standard location'
+									action superAccess + 'mv data/aclocal/ framework/AutoConfigure'
+								end
+							end and
+							! exists?('data/pkgconfig') ||
+							if exists? 'framework/PackageConfigure'
+								@log.header 'Merging extra PackageConfigure data into standard location'
+
+								action superAccess + 'mv data/pkgconfig/* framework/PackageConfigure/' and
+								begin
+									@log.header 'Deleting empty data/pkgconfig directory'
+									action superAccess + 'rmdir data/pkgconfig'
+								end
+							else
+								exists?('framework') ||
+								begin
+									@log.header 'Creating framework directory'
+									action superAccess + 'mkdir framework'
+								end and
+								begin
+									@log.header 'Moving PackageConfigure data to standard location'
+									action superAccess + 'mv data/pkgconfig/ framework/PackageConfigure'
+								end
+							end and
+							! exists?('framework/libraries/pkgconfig') ||
+							if exists? 'framework/PackageConfigure'
+								@log.header 'Merging extra PackageConfigure data into standard location'
+
+								action superAccess + 'mv framework/libraries/pkgconfig/* framework/PackageConfigure/' and
+								begin
+									@log.header 'Deleting empty framework/libraries/pkgconfig directory'
+									action superAccess + 'rmdir framework/libraries/pkgconfig'
+								end
+							else
+								exists?('framework') ||
+								begin
+									@log.header 'Creating framework directory'
+									action superAccess + 'mkdir framework'
+								end and
+								begin
+									@log.header 'Moving PackageConfigure data to standard location'
+									action superAccess + 'mv framework/libraries/pkgconfig/ framework/PackageConfigure'
+								end
+							end and
+							! exists?('data/doc') ||
+							if exists? 'documentation'
+								@log.header 'Merging extra documentation into standard location'
+
+								action superAccess + 'mv data/doc/* documentation/' and
+								begin
+									@log.header 'Deleting empty data/doc directory'
+									action superAccess + 'rmdir data/doc'
+								end
+							else
+								@log.header 'Moving documentation to standard location'
+								action superAccess + 'mv data/doc/ documentation'
+							end and
+							! exists?('man') ||
+							if exists? 'manuals'
+								@log.warning 'Merging extra manuals into standard location'
+
+								action superAccess + 'mv man/* manuals/' and
+								begin
+									@log.header 'Deleting empty man directory'
+									action superAccess + 'rmdir man'
+								end
+							else
+								@log.header 'Moving manuals to standard location'
+								action superAccess + 'mv man/ manuals'
+							end and
+							! exists?('data/man') ||
+							if exists? 'manuals'
+								@log.warning 'Merging extra manuals into standard location'
+
+								action superAccess + 'mv data/man/* manuals/' and
+								begin
+									@log.header 'Deleting empty data/man directory'
+									action superAccess + 'rmdir data/man'
+								end
+							else
+								@log.header 'Moving manuals to standard location'
+								action superAccess + 'mv data/man/ manuals'
+							end and
+							! exists?('info') ||
+							if exists? 'manuals/info'
+								@log.warning 'Merging extra info manuals into standard location'
+
+								action superAccess + 'mv info/* manuals/info/' and
+								begin
+									@log.header 'Deleting empty info directory'
+									action superAccess + 'rmdir info'
+								end
+							else
+								exists?('manuals') ||
+								begin
+									@log.header 'Creating manuals directory'
+									action superAccess + 'mkdir manuals'
+								end and
+								begin
+									@log.header 'Moving info manuals to standard location'
+									action superAccess + 'mv info/ manuals/'
+								end
+							end and
+							! exists?('data/info') ||
+							if exists? 'manuals/info'
+								@log.warning 'Merging extra info manuals into standard location'
+
+								action superAccess + 'mv data/info/* manuals/info/' and
+								begin
+									@log.header 'Deleting empty data/info directory'
+									action superAccess + 'rmdir data/info'
+								end
+							else
+								exists?('manuals') ||
+								begin
+									@log.header 'Creating manuals directory'
+									action superAccess + 'mkdir manuals'
+								end and
+								begin
+									@log.header 'Moving info manuals to standard location'
+									action superAccess + 'mv data/info/ manuals/'
+								end
+							end and
+							! (exists? 'data' and empty? 'data') ||
+							begin
+								@log.header 'Deleting empty data directory'
+								action superAccess + 'rmdir data'
+							end and
+							(lineage = lineage target).each_with_index {|kin, i|
+								ancestor = i < lineage.size - 1
+
+								if exists? dir = File.join(recipePath(kin), 'distro')
+									@log.header 'Overlaying extra files' + (ancestor ? ' from ancestor ' + kin : '')
+
+									break unless copyDir dir, root, superAccess
+								end
+							} and
+							! (files = recipe['move-files']) ||
+							begin
+								@log.header 'Moving files'
+
+								for line in parseList files
+									source, destination = line.split
+
+									next if destination[0, 1] == '/' and staging and not imaging? staging
+
+									break unless action superAccess + 'mv ' +
+										(source[0, 1] == '/' && imaging?(staging) ?
+											File.join(@image, source) :
+											source
+										) + ' ' +
+										(destination[0, 1] == '/' ?
+											File.join(@image, destination) :
+											destination
+										)
+								end
+							end and
+							! (files = recipe['delete-files']) ||
+							begin
+								@log.header 'Deleting files from installation'
+
+								for file in toList files
+									next if file[0, 1] == '/' and staging and not imaging? staging
+
+									break unless action superAccess + 'rm --recursive --force ' + (
+										file[0, 1] == '/' ?
+											File.join(@image, file) :
+											file
+									)
+								end
+							end and
+							! (links = recipe['links'] and links != '') ||
+							(	not system? staging or
+								recipe['system-prefix-var'] or  # --includedir was configured
+								exists? 'framework/headers' or
+								begin
+									@log.header 'Creating temporary headers directory'
+									action superAccess + 'mkdir --parents framework/headers'
+								end
+							) &&
+							begin
+								@log.header 'Creating links'
+
+								for link in parseList links
+									original, destination = link.split
+
+									destination = File.join destination[0, 1] != '/' ?
+										# A link into the package
+										root :
+										begin
+											# A link into the system
+
+											next if staging and not imaging? staging
+
+											if original['/'] and not ['/', '.'].include? original[0, 1]
+												original = File.join(
+													system?(staging) ? '/system' : '/resources',
+													'index',
+													original
+												)
+											end
+
+											@image
+										end,
+										destination
+
+									break unless action superAccess +
+										"ln --symbolic --force #{original} " + destination
+								end
+							end and
+							@settings['no-strip'] || recipe['no-strip'] || (
+								(dirs = ['programs', 'system-programs'].collect {|dir|
+									exists?(dir = File.join(root, dir)) ? dir : nil
+								}.compact).empty? ||
+								begin
+									@log.header 'Stripping executables'
+									#--strip-unneeded
+									action superAccess + 'strip --strip-all' + dirs.collect {|dir| ' ' + File.join(dir, '*')}.join or
+										$? >> 8 == 1  # File type not recognised
+								end and
+								(dirs = ['framework/libraries', 'framework/executables'].collect {|dir|
+									exists?(dir = File.join(root, dir)) ? dir : nil
+								}.compact).empty? ||
+								begin
+									@log.header 'Stripping libraries'
+									# TODO: limit to .so files in framework/libraries/
+									action superAccess + 'strip --strip-debug ' + dirs.collect {|dir| ' ' + File.join(dir, '*')}.join or
+										$? >> 8 == 1
+								end
+							) and
+							! (cmdLines = recipe['pre-register']) ||
+							begin
+								@log.header 'Executing pre-registration instructions'
+								action toCommands(cmdLines)
+							end and
+							! @systemBuild || staging != 'libraries' ||
+							begin
+								@log.header 'Cleansing system libraries'
+
+								for file in Dir['*']
+									break unless ['framework', 'documentation'].include?(file) or
+										action superAccess + 'rm --recursive --force ' + file
+								end and
+								# TODO?: may need to be kept in some cases:
+								action superAccess + 'rm --recursive --force framework/executables/'
+							end and
+							! @systemBuild || staging != 'compatibility' ||
+							begin
+								@log.header 'Cleansing compatibility libraries'
+
+								for file in Dir['*']
+									break unless ['framework', 'documentation'].include?(file) or
+										action superAccess + 'rm --recursive --force ' + file
+								end and
+								action superAccess + 'rm --recursive --force framework/headers/' and
+								action superAccess + 'rm --recursive --force framework/executables/'
+							end and
+							! system?(staging) ||
+							begin
+								devRoot = File.join @image, '/system/development/resources', installName(target), version(target)
+
+								Dir['framework/libraries/*.a'] == [] ||
+								begin
+									@log.header 'Creating development libraries directory'
+
+									action superAccess + 'mkdir --parents ' + (dir = File.join(devRoot, 'framework/libraries')) and
+									begin
+										@log.header 'Moving static libraries to development area'
+										action superAccess + 'mv framework/libraries/*.a ' + dir
+									end and
+									(Dir['framework/libraries/*'] != []) ||
+									begin
+										@log.header 'Deleting empty libraries directory'
+										action superAccess + 'rmdir framework/libraries'
+									end
+								end and
+								Dir['framework/headers/*'] == [] ||
+								begin
+									if exists?(dir = File.join(devRoot, 'framework/headers'))
+										@log.warning 'Merging extra headers into development area'
+
+										action superAccess + 'mv framework/headers/* ' + dir and
+										begin
+											@log.header 'Deleting empty headers directory'
+											# Linux kernel has hidden files:
+											action superAccess + 'rm -r framework/headers'
+										end
+									else
+										exists?(dir = File.join(devRoot, 'framework')) ||
+										begin
+											@log.header 'Creating development framework directory'
+											action superAccess + 'mkdir --parents ' + dir
+										end and
+										begin
+											@log.header 'Moving headers to development area'
+											action superAccess + 'mv framework/headers/ ' + dir
+										end
+									end
+								end and
+								! exists?('framework/AutoConfigure') ||
+								begin
+									exists?(dir = File.join(devRoot, 'framework')) ||
+									begin
+										@log.header 'Creating development framework directory'
+										action superAccess + 'mkdir --parents ' + dir
+									end and
+									begin
+										@log.header 'Moving AutoConfigure data to development area'
+										action superAccess + 'mv framework/AutoConfigure/ ' + dir
+									end
+								end and
+								! (exists? 'framework' and Dir['framework/*'] == []) ||
+								begin
+									@log.header 'Deleting empty framework directory'
+									action superAccess + 'rmdir framework'
+								end and
+								! (docs = recipe['develop-docs']) ||
+								begin
+									@log.header 'Creating development documentation directory'
+
+									action superAccess + 'mkdir --parents ' + (dir = File.join devRoot, 'documentation') and
+									begin
+										@log.header 'Moving development documentation to development area'
+
+										for file in toList docs
+											break unless action superAccess + "mv #{File.join 'documentation', File.basename(file)} " + dir
+										end
+									end
+								end and
+								begin
+									@log.header 'Registering development files'
+
+									# Link files into the staging area
+									action "package register #{devRoot} " + File.join(@stage, 'index')
+								end
+							end and
+							registerModule staging, superAccess, target, root
+						end
+					end
+				end
+			end
+		end
+	then
+		action 'sync'
+	else
+		@log.failure target
+	end
+end
+
+def registerModule staging, superAccess, target, root
+	@log.header 'Registering ' + target
+
+	staging && ! imaging?(staging) || action(superAccess + 'package register ' + root + (staging ?
+		(system?(staging) ?
+			' ' + @systemIndex :  # Link module into the system image core
+			@systemBuild ? ' ' + @resourcesIndex : ''  # Link module into the system image resources
+		) :
+		''
+	)) and
+	# Link module into the staging area
+	! staging || action("package register #{root} " + File.join(@stage, staging == 'bootstrap' ? 'bootstrap/index' : 'index')) and
+	(  # @bootstrap or (
+		not exists? dir = File.join(root, 'tasks/setup') or
+		for file in listFiles dir
+			# FIXME: break unless action superAccess + 'source ' + file
+		end
+	)  # )
+end
+
+def unregisterModule staging, superAccess, name, root
+	@log.header 'Unregistering ' + name
+
+	staging && ! imaging?(staging) || action(superAccess + 'package unregister ' + root + (staging ?
+		(system?(staging) ?
+			' ' + @systemIndex :  # Unlink module from the system image core
+			@systemBuild ? ' ' + @resourcesIndex : ''  # Unlink module from the system image resources
+		) :
+		''
+	)) and
+	# Unlink module from the staging area
+	! staging || action("package unregister #{root} " + File.join(@stage, staging == 'bootstrap' ? 'bootstrap/index' : 'index'))
+end
+
+def uninstallModule staging, target
+	superAccess = staging && ! @systemBuild ? '' : @superAccess
+
+	if
+		if dir? target and native? target and not exists? File.join(target, 'image')
+		then  # A native non-resource module
+			Dir.chdir target
+			if exists? dir = buildDir(target) then Dir.chdir dir end
+
+			action superAccess + makeCommand(target) + ' uninstall'
+		else
+			superAccess = @superAccess if getRecipe(target)['super-install']
+
+			dir = installPath staging, target
+			name = shortName target
+
+			unregisterModule staging, superAccess, name, dir and
+			begin
+				@log.header 'Deleting ' + name
+				action superAccess + 'rm --recursive --force ' + dir
+			end
+		end
+	then
+		action 'sync'
+	else
+		# FIXME: cascading error reporting
+		@log.failure target
+		false
+	end
+end
+
+def buildPackage target
+	# FIXME: not correct for FLAGS override and cross-compiling
+	# TODO: include version from recipe
+	file = "#{name = fullName target}-0#{@kernel == 'Syllable' ? '' : '.' + @kernel}.#{@machine}.resource"
+
+	if
+		if exists? file and not action 'rm ' + file
+			# Zip would add to the existing package
+			@log.error "Could not remove existing package " + file
+			false
+		else
+			Dir.chdir root = installRoot(false)
+
+#			action 'tar -cvzf ' + file +
+#				" --directory=#{root} " +
+			action 'zip -ry' +
+#				' -b ' + dereference(root) +  # Doesn't work
+				" #{File.join @workDir, file} " +
+					installName(name)
+#				Doesn't work with Zip:
+#				(	(links = (links = parseList(getRecipe(name)['links'])) ?
+#						links.collect { |link|
+#							(destination = link.split[1])[0, 1] == '/' ?  # A link into the system
+#								destination :
+#								nil
+#						}.compact :
+#						[]
+#					) == [] ?
+#						'' :
+##						' --absolute-names ' + toString(links)
+#						' ' + toString(links)
+#				)
+		end
+	then
+		action 'sync'
+	else
+		@log.failure target
+	end
+end
+
+def buildModule staging, directive, target
+	if getModule target  # Source is available
+		Dir.chdir @workDir  # Target path may be relative or absolute
+
+		@log.header 'Cleaning'
+		Dir.chdir target
+		cleanModule target
+		Dir.chdir @workDir
+
+		if configureModule staging = directive ? directive : staging, target
+			@log.header 'Making'
+
+			if makeModule(staging, target) and staging
+				Dir.chdir @workDir
+
+				@log.header 'Installing in staging area'
+				installModule staging, target
+			end
+		end
+	end
+
+	Dir.chdir @workDir
+end
+
+def prepareModule target
+	@log.entry target
+
+	if status = (recipe = getRecipe target)['status']
+		@log.warning 'Status: ' + status
+	end
+
+	if warnings = recipe['warnings']
+		@log.warning warnings
+	end
+
+	for line in parseList @settings[native?(target) ? 'native-env' : 'ports-env']
+		var, value = toNameValue line
+		ENV[var] = value
+	end
+
+	for var in ['CFLAGS', 'CXXFLAGS', 'IMAGE']
+		@log.extra var + ': ' + ((value = ENV[var]) ? value : '')
+	end
+end
+
+
+# Functions for multiple modules
+
+def get targets
+	@log.header 'Fetching ' + targets.to_s
+
+	for target in targets.modules
+		prepareModule target
+		getModule target
+		Dir.chdir @workDir
+	end
+end
+
+def download targets
+	@log.header 'Downloading ' + targets.to_s
+
+	for target in targets.modules
+		prepareModule target
+		downloadModule target
+		Dir.chdir @workDir
+	end
+end
+
+def update targets
+	@log.header 'Updating ' + targets.to_s
+
+	for target in targets.modules
+		prepareModule target
+		updateModule target
+		Dir.chdir @workDir
+	end
+end
+
+def unpack targets
+	@log.header 'Unpacking ' + targets.to_s
+
+	for target in targets.modules
+		prepareModule target
+		unpackModule target
+		Dir.chdir @workDir
+	end
+end
+
+def patch targets
+	@log.header 'Patching ' + targets.to_s
+
+	for target in targets.modules
+		prepareModule target
+
+		unless patchModule target
+			@log.error 'Source not patched'
+			@log.failure targets.to_s
+		end
+		Dir.chdir @workDir
+	end
+end
+
+def delete targets
+	@log.header 'Deleting ' + targets.to_s
+
+	for target in targets.modules
+		prepareModule target
+		deleteModule target
+	end
+end
+
+def distclean targets
+	@log.header 'Cleaning distribution ' + targets.to_s
+
+	for target in targets.modules
+		prepareModule target
+
+		Dir.chdir target
+		action makeCommand(target) + ' distclean', target
+		Dir.chdir @workDir
+	end
+end
+
+def configure targets
+	@log.header 'Configuring ' + targets.to_s
+
+	for target in targets.specs
+		prepareModule target
+
+		directive = false
+		directive, target = target.split if target[' ']
+
+		configureModule directive, target
+		Dir.chdir @workDir
+	end
+end
+
+def clean targets
+	@log.header 'Cleaning ' + targets.to_s
+
+	for target in targets.modules
+		prepareModule target
+
+		Dir.chdir target
+		cleanModule target
+		Dir.chdir @workDir
+	end
+end
+
+def make targets
+	@log.header 'Making ' + targets.to_s
+
+	for target in targets.modules
+		prepareModule target
+
+		directive = false
+		directive, target = target.split if target[' ']
+
+		Dir.chdir target
+		makeModule directive, target
+		Dir.chdir @workDir
+	end
+end
+
+def test targets
+	@log.header 'Testing ' + targets.to_s
+
+	for target in targets.modules
+		prepareModule target
+
+		Dir.chdir target
+		testModule target
+		Dir.chdir @workDir
+	end
+end
+
+def install targets
+	@log.header 'Installing ' + targets.to_s
+
+	for target in targets.modules
+		prepareModule target
+
+		installModule false, target
+		Dir.chdir @workDir
+	end
+end
+
+def uninstall targets
+	@log.header 'Uninstalling ' + targets.to_s
+
+	for target in targets.modules
+		prepareModule target
+
+		uninstallModule false, target
+		Dir.chdir @workDir
+	end
+end
+
+def buildPackages targets
+	@log.header 'Making distribution packages ' + targets.to_s
+
+	for target in targets.modules
+		prepareModule target
+
+		buildPackage target
+		Dir.chdir @workDir
+	end
+end
+
+def buildPack targets
+	@log.header 'Making compound package ' + name = targets.to_s
+
+	if
+		unless (profile = targets.profile)
+			@log.error 'Not a valid compound package'
+			false
+		else
+			# Check the profile for a name for the package
+			if n = profile['name'] then name = n end
+
+			action "mkdir " + name and
+			unless
+				# Get a recipe with this profile
+				(lineage = lineage targets.to_s).each_with_index {|kin, i|
+					if exists? dir = File.join(recipePath(kin), 'distro')
+						@log.header 'Overlaying extra distribution files from ancestor ' + kin
+
+						Dir.chdir @workDir
+						break unless action "cp -a #{File.join dir, '*'} " + name and
+						begin
+							# FIXME: crude way to remove possible CVS info from patches
+							Dir.chdir name
+							deleteCruft ''
+						end
+					end
+				}
+			then
+				false
+			else
+				Dir.chdir @workDir
+				kernelPart = @kernel == 'Syllable' ? '' : '.' + @kernel
+			
+				for package in modules = targets.modules
+					# Try to find the latest release. FIXME: alphabetical ordering and empty lists
+					break unless action "ln -s #{Dir[
+#							File.join(@distrosPath, fullName(package)) + "-*#{kernelPart}*.resource"
+							File.join(@distrosPath, fullName(package)) + "*#{kernelPart}*.*"
+						].last
+					} " + name
+				end and
+				begin
+					# FIXME: not correct for FLAGS override and cross-compiling:
+					action "zip -rm #{name}-0#{kernelPart}.#{@machine}.zip " + name
+#					action "7za a -l #{name}-0#{kernelPart}.#{@machine}.7z " + name
+				end
+			end
+		end
+	then
+		action 'sync'
+	else
+		@log.failure name
+	end
+end
+
+def build staging, targets
+	@log.header 'Building ' + targets.to_s
+
+	if
+		! (targets.profile and imaging? staging) ||
+		begin
+			Dir.chdir @image
+
+			! (tree = targets.profile['tree']) ||
+			begin
+				@log.header 'Building distribution tree'
+
+				for line in parseList tree
+					dir, icon = line.split
+
+					@log.detail dir
+					break unless action @superInstall + "mkdir --parents " + dir
+
+					if icon and @syllable
+						@log.detail 'Setting icon ' + icon
+						break unless action @superInstall + "addattrib #{dir} os::Icon " + File.join(@iconsPath, icon)
+					end
+				end
+			end and
+			! (cmdLines = targets.profile['prepare']) ||
+			begin
+				@log.header 'Executing preparation instructions'
+
+				action toCommands(cmdLines)
+			end and
+			! (resources = targets.profile['resources']) ||
+			begin
+				@log.header 'Installing resources'
+				Dir.chdir @image
+
+				for line in parseList resources
+					dir, resource, type = line.split
+					files = File.join @resourcesPath, resource
+					@log.detail resource
+
+					if Dir[files] == []  # Not single files; should be a pack
+						break unless action @superInstall + "unzip -o #{files}.zip -d " + dir
+					else
+						break unless action @superInstall + "cp -a #{files} " + dir and
+							! (type and @syllable) ||
+							begin
+								@log.detail 'Setting type ' + type
+								action @superInstall + "addattrib #{File.join dir, File.basename(files)} os::MimeType " + type
+							end
+					end
+				end
+			end
+		end and
+		begin
+			# Build all directories
+			Dir.chdir @workDir
+
+			for target in targets.specs
+				prepareModule target
+
+				directive = false
+				directive, target = target.split if target[' ']
+
+				buildModule staging, directive, target
+			end
+
+			not (targets.profile and imaging? staging and cmdLines = targets.profile['finish']) or
+			begin
+				@log.header 'Executing finishing instructions'
+
+				Dir.chdir @image
+				action toCommands(cmdLines)
+			end
+		end
+	then
+		action 'sync'
+	else
+		@log.failure targets.to_s
+	end
+end
+
+
+# Helper functions
+
+def deleteCruft superAccess
+	puts "\nWARNING! If this is a CVS repository, it will be clobbered!"
+
+	# Delete all CVS dirs
+	# (They would trigger some ports to reconfigure themselves.)
+	@log.header 'Cleaning out CVS directories'
+
+	Dir['**/CVS'].each do |dir|
+		@log.detail dir
+		action superAccess + 'rm --recursive ' + dir
+	end
+
+	@log.header 'Cleaning out .cvsignore files'
+
+	Dir['**/.cvsignore'].each do |file|
+		@log.detail file
+		action superAccess + 'rm ' + file
+	end
+
+	@log.header 'Cleaning out Subversion directories'
+
+	Dir['**/.svn'].each do |dir|
+		@log.detail dir
+		action superAccess + 'rm --recursive --force ' + dir  # Has write-protected files
+	end
+
+	@log.header 'Cleaning out backup files'
+
+	Dir['**/*~'].each do |file|
+		@log.detail file
+		action superAccess + 'rm ' + file
+	end
+end
+
+def exists? file
+	FileTest.exists? file
+end
+
+def file? file
+	FileTest.file? file
+end
+
+def dir? file
+	FileTest.directory? file
+end
+
+def symlink? file
+	FileTest.symlink? file
+end
+
+def empty? dir
+	Dir[File.join(dir, '*')] == []
+end
+
+def listFiles dir
+	Dir.entries(dir).collect {|file| File.join dir, file}.delete_if {|file| not file? file}
+end
+
+def dereference file
+	symlink?(file) ?
+		(file[0, 1] == '/' ? '/' : '') + dereference(File.readlink(file)) :
+		file
+end
+
+def copyFiles source, destination, superAccess
+	action superAccess + "cp --recursive --no-dereference --preserve=link,mode,timestamps #{source} " + destination
+end
+
+def copyDir source, destination, superAccess
+	copyFiles File.join(source, '*'), destination, superAccess and
+	begin
+		# FIXME: crude way to remove possible CVS dirs from files
+		Dir.chdir destination
+		deleteCruft superAccess
+	end
+end
+
+def loadFile file  # Load the lines of a file into an array, discarding comments and empty lines
+	lines = []
+
+	File.open file do |file|
+		file.each do |line|
+			# Get rid of record delimiter, comments and empty lines
+			lines += [line.chomp] unless line.strip == '' or line[0, 1] == ';'
+		end
+	end
+
+	lines
+end
+
+def saveFile data, file  # Write an array to a text file
+	File.open file, 'w' do |file|
+		for line in data
+			file << line + "\n"
+		end
+	end
+end
+
+def toNameValue line  # Splits a line on the first whitespace
+	i = line.index(/\s/)  # First whitespace
+	[line[0, i], line[i + 1 .. line.length - 1].strip]
+end
+
+def toString value  # Join list value into a space-separated string
+	if value.is_a? Array
+		value.join(' ')
+	else  # Assume it's already a string, or nil
+		value
+	end
+end
+
+def parseMap text  # Load key/value pairs into a hash table
+	hash = {}
+
+	for line in text
+		if line !~ /^\s+/  # A key line
+			unless (line = line.strip)[/\s/]  # A single key
+				hash[lastKey = line] = ''
+			else  # A key with a value
+				lastKey, value = toNameValue line
+				hash[lastKey] = value
+			end
+		else  # Starts with whitespace, so it's a list value
+			if hash[lastKey] == ''
+				hash[lastKey] = [line.strip]
+#				margin = $&
+			else
+				hash[lastKey] << line.strip
+			end
+		end
+	end
+
+	hash
+end
+
+def parseList value  # Normalize value into an array
+	if value.is_a? String
+		value.split "\n"
+	else  # Assume it's already an array, or nil
+		value
+	end
+end
+
+def toList value  # Force values into an array
+	if value.is_a? String
+		value.split
+	else  # Assume it's an array
+		list = []
+
+		for line in value
+			list += line.split
+		end
+
+		list
+	end
+end
+
+def toCommands value  # Join list value into a shell command string
+	if value.is_a? Array
+		value.join("\n")
+	else  # Assume it's already a string, or nil
+		value
+	end
+end
+
+def toVariables value  # Join an array of environment variables into shell syntax
+	toString((parseList value).collect do |line|
+		var, value = toNameValue line
+		var + '=' + value
+	end)
+end
+
+def firstColumn list  # Extract the first value of each line from a list of unsplit lines
+	list ? list.collect {|line| line.split.first} : []
+end
+
+def fullName port
+	# Extract name including version and flavour, if necessary
+	File.basename port[-1, 1] == '/' ? port.chop : port
+end
+
+def shortName port
+	# Extract name without version
+	/--|-\d|\.|$/.match(fullName(port)).pre_match
+end
+
+def version port
+	(version = getRecipe(port)['version']) ?
+		version :
+		# Extract version
+		/^\d+(\.\d+)*\w*/.match(
+			# Version + flavour:
+			/^(--|-|)/.match(fullName(port)[shortName(port).length .. -1]).post_match
+		).to_s
+end
+
+def commonName port
+	# Name without flavour
+	shortName(port) + ((version = version port) == '' ? '' : '-' + version)
+end
+
+def installName port
+	@includeVersion && ! @systemBuild ?
+		fullName(port) :
+		shortName(port)
+end
+
+def sourcePath target
+	target[0, 1] == '/' ? target : File.join(@workDir, target)
+end
+
+def system? staging
+	['system', 'libraries', 'compatibility'].include? staging
+end
+
+def imaging? staging
+	staging == 'image' or system? staging
+end
+
+def installRoot staging
+	File.join imaging?(staging) ?
+		@image :
+		case staging
+		when 'stage'
+			@stage
+		when 'bootstrap'
+			File.join @stage, 'bootstrap'
+		else
+			''
+		end,
+		system?(staging) ? '/system/resources' : imaging?(staging) || ! staging ? '/resources' : ''
+end
+
+def installPath staging, port
+	File.join installRoot(staging),
+		system?(staging) ?
+			File.join(installName(port), version(port)) :
+			installName(port)
+end
+
+def prefix staging, port
+	system?(staging) ?
+		File.join('/system/resources', installName(port), version(port)) :
+		File.join(
+			imaging?(staging) ? '/resources' : installRoot(staging),
+			installName(port)
+		)
+end
+
+def recipePath portPath
+	File.join @portsPath, portPath
+end
+
+def native? target
+	not exists? File.join(sourcePath(target), 'configure') and not
+		# Currently look for a recipe to distinguish from meta-packages:
+		getRecipe(target)['authors']
+end
+
+class Profile
+attr_reader :profile
+
+	def Profile.path= path
+		@@profilesPath = path
+	end
+
+	def initialize target
+		@profile = exists?(@file = File.join(@@profilesPath, target)) ?
+			parseMap(loadFile(@file)) :
+			nil
+	end
+
+	def [] key
+		(value = @profile[key]) ?
+			value :
+		exists?(file = File.join(@file, key)) ?
+			loadFile(file) :
+			nil
+	end
+
+	def []= key, value
+		saveFile [key] + (value ? value.collect {|line| "\t" + line} : []), @file  # File.join(@file, key)
+	end
+end
+
+def getTarget target
+	profile = nil
+	Struct.new(:to_s, :specs, :modules, :profile).new(
+		target,
+		# Get the list of modules for the build target, or a single module
+		specs = if target['/']  # A single target directory
+			target[-1, 1] == '/' ? target.chop : target
+		elsif (p = Profile.new target).profile  # A profile
+			(l = parseList((profile = p)['modules'])) ? l : []
+		else
+			target
+		end,
+		specs.collect {|line| line.split.last},
+		profile
+	)
+end
+
+def loadRecipe project, target  # Read a recipe file
+	if exists? file = File.join(recipePath(File.join(project, target = fullName(target))), target + '.recipe')
+		loadFile file
+	else  # No recipe
+		[]
+	end
+end
+
+def overlayRecipe recipe, overlay
+	for key, value in overlay
+		recipe[key] = value
+	end
+	recipe
+end
+
+def getRecipe target  # Load the key/value pairs of a recipe into a hash table
+	target = fullName target
+	recipe = {}
+	ancestry = []
+
+	for project in @lineage
+		if (projectRecipe = parseMap loadRecipe(project, target)) != []
+			recipe = overlayRecipe(recipe, projectRecipe)
+			ancestry.push File.join(project, target)
+		end
+	end
+
+	if parents = recipe['inherits']
+		ancestorsRecipe = {}
+		parentAncestries = []
+
+		for parent in toList parents
+			ancestorsRecipe = overlayRecipe(ancestorsRecipe, parentRecipe = getRecipe(parent))
+			parentAncestries.push parentRecipe['ancestry']
+		end
+
+		recipe = overlayRecipe(ancestorsRecipe, recipe)
+		recipe['ancestry'] = [parentAncestries] << ancestry
+	else
+		recipe['ancestry'] = ancestry
+	end
+
+	recipe
+end
+
+def lineage target
+	getRecipe(target)['ancestry'].flatten
+end
+
+def configureCommand port
+	(cmd = toString((recipe = getRecipe port)['configure-cmd'])) ?
+		cmd :
+		((dir = recipe['build-dir']) and exists? File.join(sourcePath(port), cmd = File.join(dir, 'configure'))) ?
+			cmd :
+			'configure'
+end
+
+def makeCommand target
+	native?(target) ?
+		exists?('OMakeroot') ? 'omake' : 'make' :
+		'make' + ((file = getRecipe(target)['make-file']) ? ' -f ' + file : '')
+end
+
+def buildDir target
+	(dir = getRecipe(target)['build-dir']) ?
+		dir :
+		exists?(cmd = File.join(sourcePath(target), configureCommand(target))) ?
+			'../_' + fullName(target) :
+			'.'
+end
+
+def sourcePackageAvailable? package
+	Dir[File.join(@sourcesPath, File.basename(package) + '.t*')] != [] or
+	exists? File.join(@sourcesPath, File.basename(package) + '.zip')
+end
+
+def sourcePackagesAvailable? target
+	for package in ((packages = getRecipe(target)['packages']) ?
+		firstColumn(parseList(packages)) :
+		commonName(target)
+	)
+		break unless sourcePackageAvailable? package
+	end
+end
+
+def action command  # Return the output of the shell command, or false if unsuccessful
+	@log.action command
+	stdout = `#{command}`
+	if (status = $? >> 8) == 0  # OK
+		@log.result stdout
+		stdout
+	else
+		@log.error status
+		@log.result stdout
+		false
+	end
+end
+
+class Log
+attr_reader :failures
+
+	def Log.path= path
+		Dir.mkdir path unless exists? path
+
+		@@logsPath = path
+	end
+
+	def Log.[] log
+		IO.readlines File.join(@@logsPath, log)
+	end
+
+	def initialize machType, crossCompile
+		@failures = []
+
+		@log		= File.new File.join(@@logsPath, 'stdout'), 'w'
+		@summary	= File.new File.join(@@logsPath, 'summary'), 'w'
+		@failLog	= File.new File.join(@@logsPath, 'failures'), 'w'
+
+		@log << s = (crossCompile ? 'Cross-b' : 'B') + "uilding in root directory #{Dir.getwd} on #{machType}\n"
+		@summary << s
+		@failLog << s
+	end
+
+	def close
+		@log << s = "\nFinished\n"
+		@summary << s
+
+		@log.close
+		@summary.close
+		@failLog.close
+	end
+
+	def header header
+		print "\n" + s = header + "\n"
+		@log << "\n#{s}\n"
+		@summary << s
+	end
+
+	def subheader header
+		print "\n" + s = header + "\n"
+		@log << "\n#{s}\n"
+		@summary << s
+	end
+
+	def entry entry
+		print s = "\n#{entry}\n"
+		@log << s
+		@summary << s
+	end
+
+	def detail detail
+		puts detail
+		@log << detail + "\n"
+	end
+
+	def extra extra
+		@log << "\n#{extra}\n"
+	end
+
+	def action action
+		puts "\n#{action}\n"
+		@log << action + ': '
+		@summary << action
+	end
+
+	def warning warnings
+		unless warnings.is_a? Array
+			puts "\n" + s = 'Warning: ' + warnings
+			@log << s + ':'
+			@summary << ": #{s}\n"
+		else
+			puts "\n" + s = "Warnings:\n"
+			@log << s
+			@summary << s
+
+			for line in warnings
+				puts line
+				@log << line + "\n"
+				@summary << line + "\n"
+			end
+		end
+	end
+
+	def error error
+		puts "\n" + s = "Error: #{error}"
+		@log << s + ':'
+		@summary << ": #{s}\n"
+	end
+
+	def result result
+		@log << "\n\n" << result
+		@summary << "\n"
+	end
+
+	def failure target
+		@failLog << target + "\n"
+		@failures << target
+	end
+end
+
+
+# Define paths
+
+@workDir = Dir.getwd
+
+# Get the path to the application directory.
+@builderPath = File.dirname File.dirname(dereference(File.expand_path($0)))
+
+# Get global settings
+@settings = parseMap loadFile(File.join(@builderPath, 'settings'))
+
+@portsPath, Profile.path,	@configPath,	@resourcesPath,	@distrosPath,		Log.path = [
+'packages', 'profiles',		'sources',		'resources',	'distributions',	'logs'
+].collect {|dir| File.join @builderPath, dir}
+
+@sourcesPath = (dir = @settings['sources-path']) ? dir : @configPath
+
+@iconsPath = '/system/icons'
+
+
+# Set environment variables
+
+for line in parseList @settings['environment']
+	var, value = toNameValue line
+	ENV[var] = value
+end
+
+
+# Define settings
+
+# BASh 3 only exports the $SYSTEM variable:
+@kernel = `uname`.chomp
+@machType = (@machine = `uname -m`.chomp) + '-' +
+	((hardware = `uname -i`.chomp) == 'unknown' ? 'pc' : hardware) + '-' +
+	(@kernel == 'Linux' ? 'linux-gnu' : @kernel)
+@kernel = 'Syllable' if @syllable = @kernel == 'syllable'
+
+# Project trees
+@lineage = (@lineage = @settings['lineage']) ?
+	parseList(@lineage) :
+	['']
+
+# Confine ourselves to a subsection of CVS?
+@cvsPath = '' unless @cvsPath = @settings['cvs-path']
+
+@revision = @settings['revision']
+
+# Include version number on installed ports?
+@includeVersion = @settings['include-version']
+
+ENV['STAGE'] = @stage = File.join(@workDir, 'stage')
+ENV['IMAGE'] = @image = File.join(@stage, 'image')
+
+@systemIndex = File.join @image, 'system/index'
+@resourcesIndex = File.join @image, 'resources/index'
+
+unless @systemBuild = File.basename(@workDir) == 'system'
+	@crossCompile = false
+else
+	if @crossCompile = @target = @settings['target']
+		ENV['CC']  = @target + '-gcc'
+		ENV['CXX'] = @target + '-g++'
+		ENV['AS']  = @target + '-as'
+		ENV['LD']  = @target + '-gcc'
+		ENV['CFLAGS']   = "-b #{@target} " + (var = ENV['CFLAGS']   ? var : '')
+		ENV['CXXFLAGS'] = "-b #{@target} " + (var = ENV['CXXFLAGS'] ? var : '')
+		ENV['LDFLAGS']  = "-b #{@target} " + (var = ENV['LDFLAGS']  ? var : '')
+	end
+
+#	@buildTools = File.join @workDir, 'build-tools'
+
+	ENV['ATHEOS_SRC'] = @workDir
+	ENV['DIST_DIR'] = @image
+end
+
+# Isolate build in staging area from the build host?
+@isolateStage = @crossCompile || @settings['isolate-stage']
+# Or run newly built binaries and libraries on the build host to bootstrap?
+@bootstrap = !@crossCompile && @bootstrapLevel = @settings['bootstrap']
+
+@superAccess = @syllable ?
+	'' :  # Syllable has no sudo yet
+	'sudo ' +
+		# TODO: settings/environment
+		'CC="$CC" ' +
+		'CXX="$CXX" ' +
+		'AS="$AS" ' +
+		'LD="$LD" ' +
+		'CFLAGS="$CFLAGS" ' +
+		'CXXFLAGS="$CXXFLAGS" ' +
+		'LDFLAGS="$LDFLAGS" ' +
+		'LIBS="$LIBS" ' +
+		'C_INCLUDE_PATH=$C_INCLUDE_PATH ' +
+		'CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH ' +
+		'LIBRARY_PATH=$LIBRARY_PATH ' +
+		'DLL_PATH=$DLL_PATH ' +
+		'LD_LIBRARY_PATH=$LD_LIBRARY_PATH ' +
+		'PKG_CONFIG_PATH=$PKG_CONFIG_PATH ' +
+		'IMAGE=$IMAGE ' +
+		'STAGE=$STAGE '
+@superInstall = @systemBuild ? @superAccess : ''
+
+
+# Main function
+
+arg1, arg2, arg3 = ARGV
+
+case arg1
+when 'version', '-v', '--version'
+	puts 'Syllable Build System 0.12.2',
+		'Copyright (c) 2002-2012 Kaj de Vos',
+		'License: GPL 3 or any later version'
+when 'help', '?', '-?', '-h', '-help', '--help'
+	puts 'Usage:',
+		'  build [<command>] [<module> | <profile> | <package> | <log>]',
+		'  stage [<module> | <profile> | <package>]',
+		'  image [<module> | <profile> | <package>]',
+		'<command>:',
+		'  help,         Show this help information',
+		'    -h, --help,',
+		'    -help, -?, (?)',
+		'  version,      Show version information',
+		'    -v, --version',
+		'  scrub         Delete backup and CVS control files recursively from the current directory',
+		'  prepare       Initialise project image tree in staging area',
+		'  get           Fetch and patch sources',
+		'  download      Download sources',
+		'  update        Update sources, or the build system itself, from repositories',
+		'  unpack        Unpack sources from source packages',
+		'  patch         Patch sources',
+		'  delete        Delete sources',
+		'  distclean',
+		'  clean',
+		'  configure',
+		'  make',
+		'  test',
+		'  install       (Run as super user)',
+		'  uninstall     (Run as super user)',
+		'  stage         Build and install in the staging area',
+		'  bootstrap     Build and install in the bootstrap area',
+		'  image         Build and install in the image area',
+		'  package       Build distribution package',
+		'  pack          Build a compound package',
+#		'  release       ',
+		'  modules       List the modules of a profile',
+		'  recipe        List a recipe',
+		'  log           Show the last log',
+		'<module>:       Module subdirectory',
+		'<profile>:      Profile name',
+		'  last          Last used profile',
+		'  failures      Profile for last failures',
+		'<package>:      Distribution package (install command only)',
+		'<log>:          Log name',
+		'  summary       Summarised log',
+		'  failures      Log of failed modules'
+when 'modules' then puts Profile.new(arg2)['modules']
+when 'recipe'  then puts getRecipe(arg2).to_a
+when 'log'     then print Log[arg2 ? arg2 : 'stdout']
+else
+	@log = Log.new @machType, @crossCompile
+
+	if arg1 == 'scrub'
+		deleteCruft ''
+	elsif arg1 == 'update' and not arg2
+		@log.header 'Updating build system'
+
+		Dir.chdir @builderPath
+		action 'cvs -q update -dP' + (@revision ? ' -r ' + @revision : '')
+	else
+		target  = getTarget arg2 ? arg2 : arg1 ? arg1 : './'
+		profile = target.profile
+
+		Profile.new('last')['modules'] = profile['modules'] if profile  # Processing a profile
+
+		if arg1 == 'prepare'
+			prepare target
+		else
+			case arg1
+			when 'download'		then download		target
+			when 'update'		then update			target
+			when 'unpack'		then unpack			target
+			when 'delete'		then delete			target
+			when 'uninstall'	then uninstall		target
+			when 'package'		then buildPackages	target
+			when 'pack'			then buildPack		target
+			else
+				for var in ['CC', 'CXX', 'AS', 'LD']
+					@log.extra var + ': ' + ((value = ENV[var]) ? value : '')
+				end
+
+				# Pick up executables from the staging area
+
+				ENV['PATH'] =
+					if @bootstrap and @bootstrapLevel == 'full'
+						# Executables may not be position-independent or compatible with the build host:
+
+						if @systemBuild
+							unless @syllable
+								(File.join @image, 'usr/sbin') + ':' +
+								(File.join @image, 'usr/bin') + ':' +
+								(File.join @image, 'sbin') + ':' +
+								(File.join @image, 'bin') + ':'
+							else
+								''
+							end +
+
+							(File.join @image, 'system/programs') + ':'
+						else
+							''
+						end +
+
+						(File.join @stage, 'index', 'system-programs') + ':' +
+						(File.join @stage, 'index', 'programs') + ':'
+					else
+						''
+					end +
+
+					(File.join @stage, 'bootstrap/index', 'system-programs') + ':' +
+					(File.join @stage, 'bootstrap/index', 'programs') + ':' +
+
+					ENV['PATH']
+
+				@log.extra 'PATH: ' + ENV['PATH']
+
+				# Pick up headers from the staging area and system repository
+
+				headers =
+					# Linked headers
+					(File.join @stage, 'index', 'framework/headers') + ':' +
+
+					if @systemBuild
+						# C library headers
+#						(File.join @image, 'system/development/resources/glibc/2.7/framework/headers') + ':' +
+						# Some Linux system and C library headers
+						(File.join @image, 'usr/include') + ':' +
+						# Syllable system headers
+						(File.join @image, 'system/development/headers') + ':' +
+#						(@syllable ? File.join(@workDir, 'sys/include') + ':' : '')
+						(File.join @workDir, 'sys/include') + ':'
+					else
+						''
+					end +
+
+					(File.join @stage, 'bootstrap/index', 'framework/headers')
+
+				ENV['ATHEOS_INCLUDE_PATH'] = File.join @workDir, 'sys/include' if @systemBuild
+				ENV['C_INCLUDE_PATH'] = headers +
+					((var = ENV['C_INCLUDE_PATH']) && !@isolateStage ? ':' + var : '')
+				ENV['CPLUS_INCLUDE_PATH'] = headers +
+					((var = ENV['CPLUS_INCLUDE_PATH']) && !@isolateStage ? ':' + var : '')
+
+				@log.extra 'C_INCLUDE_PATH: ' + ENV['C_INCLUDE_PATH']
+				@log.extra 'CPLUS_INCLUDE_PATH: ' + ENV['CPLUS_INCLUDE_PATH']
+
+				# Pick up libraries from the staging area
+
+				ENV['ATHEOS_LIB_PATH'] = File.join @image, 'system/libraries' if @systemBuild
+
+				ENV[name = (@syllable ? 'DLL' : 'LD_LIBRARY') + '_PATH'] =
+					if @bootstrap
+						# Shared libraries may not be compatible with the build host:
+
+						(File.join @stage, 'index', 'framework/libraries') + ':' +
+
+						if @systemBuild
+							(File.join @image, 'system/libraries') + ':' +
+							(File.join @image, 'system') + ':'
+						else
+							''
+						end
+					else
+						''
+					end +
+
+					File.join(@stage, 'bootstrap/index', 'framework/libraries') +
+
+					((var = ENV[name]) ? ':' + var : '')
+
+				@log.extra name + ': ' + ENV[name]
+
+				# Some packages find some shared libraries through the GCC path:
+				ENV['LIBRARY_PATH'] =
+					File.join(@stage, 'index', 'framework/libraries') + ':' +
+					(@systemBuild ? File.join(@image, 'system/libraries') + ':' : '') +
+					File.join(@stage, 'bootstrap/index', 'framework/libraries') +
+					((var = ENV['LIBRARY_PATH']) && !@isolateStage ? ':' + var : '')
+
+				@log.extra 'LIBRARY_PATH: ' + ENV['LIBRARY_PATH']
+
+				unless @syllable or @bootstrap
+					# Doesn't work for all ports, and trips up some:
+					ENV['LDFLAGS'] = ((var = ENV['LDFLAGS']) ? var : '') +
+						' -L' + File.join(@stage, 'index', 'framework/libraries') +
+						(@systemBuild ? ' -L' + File.join(@image, 'system/libraries') : '') +
+						' -L' + File.join(@stage, 'bootstrap/index', 'framework/libraries')
+
+					@log.extra 'LDFLAGS: ' + ENV['LDFLAGS']
+				end
+
+				# Pick up PkgConfig configuration info from the staging area
+
+				ENV['PKG_CONFIG_PATH'] =
+					# Linked configurations
+					(File.join @stage, 'index', 'framework/PackageConfigure') + ':' +
+
+					# Linux sprawl:
+					(@systemBuild && ! @syllable ?
+						(File.join @image, 'usr/lib/pkgconfig') + ':' +
+						(File.join @image, 'usr/share/pkgconfig') + ':' :
+						''
+					) +
+
+					(File.join @stage, 'bootstrap/index', 'framework/PackageConfigure') +
+
+					((var = ENV['PKG_CONFIG_PATH']) && !@isolateStage ? ':' + var : '')
+
+				@log.extra 'PKG_CONFIG_PATH: ' + ENV['PKG_CONFIG_PATH']
+
+
+				case arg1
+				when 'get'			then get		target
+				when 'patch'		then patch		target
+				when 'distclean'	then distclean	target
+				when 'clean'		then clean		target
+				when 'configure'	then configure	target
+				when 'make'			then make		target
+				when 'test'			then test		target
+				when 'install'
+					ENV['IMAGE'] = @image = '/'
+					install target
+				when 'stage', 'bootstrap', 'image'
+					build arg1, target if exists? @stage or prepare target
+				else
+					if arg2
+						@log.error 'Unrecognised command'
+						exit 1
+					else
+						build false, target
+					end
+				end
+			end
+
+			Profile.new('failures')['modules'] = @log.failures if profile  # Processing a profile
+		end
+	end
+
+	action 'sync'
+	@log.close
+	exit @log.failures.length  # FIXME: only works when processing a profile
+end

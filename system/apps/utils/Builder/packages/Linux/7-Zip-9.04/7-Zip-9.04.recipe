@@ -1,0 +1,9 @@
+authors				Kaj de Vos
+status				testing
+
+;patch				cp makefile.linux_x86_asm_gcc_4.X makefile.machine
+
+pre-register
+	sudo chmod a-x framework/libraries/7z.so programs/Codecs/* &&
+	sudo chmod a+x documentation/MANUAL &&
+	sudo chmod -R a+r documentation/*

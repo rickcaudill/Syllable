@@ -1,0 +1,17 @@
+; Syllable Cloud Server, in addition to linux/base profiles
+
+modules
+	system libs/sdl-1.2.13
+;	sdl-config needs to be in the path:
+	bootstrap libs/SDL--bootstrap
+
+	system libs/sdl-net-1.2.7
+;	system libs/SDL-Image-1.2.8
+
+
+;	Extra goodies
+
+	apps/other/Links-2.3pre1
+
+;	Needs GCC 3:
+;	apps/other/QEmulator-0.9.1

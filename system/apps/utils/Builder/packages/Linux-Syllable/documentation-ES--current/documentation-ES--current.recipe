@@ -1,0 +1,10 @@
+authors				Kaj de Vos
+
+inherits			documentation--current
+
+locations			http://ar.syllable.org/
+
+documentation		Changes.html Copyrights.html
+move-files
+	documentation/Changes.html		/documentation/Changes-ES.html
+	documentation/Copyrights.html	/documentation/Copyrights-ES.html

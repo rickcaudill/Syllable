@@ -1,0 +1,18 @@
+authors
+	Jamie Clarkson
+	Kaj de Vos
+status				incomplete
+notes
+	Builds only OSMesa; Glut is not ported.
+;	Doesn't build OSMesa; Glut is not ported.
+	Syllable driver isn't ported to this Mesa version.
+
+;make-targets		syllable
+
+install-tree
+	include
+;	include/gui
+install-files
+	lib/									.
+	include/GL/							include/
+;	src/mesa/drivers/syllable/GLView.h	include/gui/

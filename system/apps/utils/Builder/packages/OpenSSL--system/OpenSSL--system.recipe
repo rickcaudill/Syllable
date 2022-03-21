@@ -1,0 +1,11 @@
+authors 			Kaj de Vos
+status				testing
+warnings
+
+inherits			OpenSSL-0.9.8n
+version				0.9.8n
+
+install-vars
+	OPENSSLDIR		/etc/ssl
+	INSTALLTOP		/system/resources/OpenSSL/0.9.8n
+	MANDIR			/system/resources/OpenSSL/0.9.8n/manuals

@@ -1,0 +1,17 @@
+authors
+	Andrew Kennan
+	Kaj de Vos
+status				testing
+
+build-needs
+;	AutoConfigure
+	AutoConfigure 2.68
+;	AutoMake
+	AutoMake 1.11.1
+	LibraryTool
+;	LibraryTool 2.4
+	PackageConfigure
+
+make-shared
+
+install-env			DLL_PATH "$DLL_PATH:$PWD/src/.libs"

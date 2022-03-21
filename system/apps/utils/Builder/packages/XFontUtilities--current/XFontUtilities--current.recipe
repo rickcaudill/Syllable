@@ -1,0 +1,24 @@
+authors				Kaj de Vos
+warnings
+	Hardwired to install into /resources/!
+;	Makes font packages install fonts in fontrootdir instead of into themselves!
+
+inherits			XOrg
+
+version				1.1.1
+headline			X11 font utilities
+description
+	X.Org font package creation/installation utilities.
+
+packages			font/font-util-1.1.1
+
+needs				XFontBDF-to-PCF
+
+configure-options
+	--with-fontrootdir=/resources/index/data/fonts/X11
+	--with-mapdir=/resources/XFontUtilities/data/fonts/X11/util
+
+documentation
+	README COPYING ChangeLog
+;	Empty:
+;	NEWS AUTHORS

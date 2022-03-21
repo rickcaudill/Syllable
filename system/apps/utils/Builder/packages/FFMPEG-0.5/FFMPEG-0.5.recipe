@@ -1,0 +1,46 @@
+authors
+	Arno Klenke
+	Kaj de Vos
+	Kristian Van Der Vliet
+maintainers			Kaj de Vos
+status				testing
+
+headline			Audio/video tools and library
+description
+	FFmpeg is a complete, cross-platform solution to record, convert and stream audio and video. It includes libavcodec - the leading audio/video codec library.
+licenses			LGPL GPL
+
+home				ffmpeg.org
+locations			http://ffmpeg.org/releases/
+packages			ffmpeg-0.5
+;archives			svn://svn.mplayerhq.hu/ffmpeg/trunk FFMPEG
+
+needs				LibTheora
+build-needs
+	BASh <> 2.03
+	Make >= 3.80
+; Documentation build fails:
+build-conflicts		tetex
+
+no-sysconfdir
+no-sbindir
+no-includedir
+no-libexecdir
+no-datarootdir
+no-infodir
+;configure-options	--incdir=/resources/FFMPEG/framework/headers
+
+system-prefix-var	DESTDIR
+; Older versions still create this:
+install-tree
+	framework
+	framework/headers
+	framework/headers/ffmpeg
+install-files		../_FFMPEG-0.5/config.h framework/headers/ffmpeg/
+
+documentation
+	README COPYING.GPL COPYING.LGPL Changelog CREDITS MAINTAINERS doc/TODO
+;	doc/*.txt
+develop-docs		RELEASE
+build-docs			INSTALL
+internal-docs		doc/soc.txt	doc/optimization.txt

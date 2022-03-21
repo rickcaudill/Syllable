@@ -1,0 +1,8 @@
+authors
+	Arno Klenke
+	Kristian Van Der Vliet
+	Kaj de Vos
+maintainers			Kaj de Vos
+status				testing
+
+build-dir			.

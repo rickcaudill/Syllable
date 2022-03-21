@@ -1,0 +1,5 @@
+authors				Kaj de Vos
+status				broken
+warnings			Doesn't take mouse control in the console.
+
+recommends			KernelQEmulator 1.4

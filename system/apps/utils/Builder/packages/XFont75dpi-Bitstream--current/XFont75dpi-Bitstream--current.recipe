@@ -1,0 +1,26 @@
+authors				Kaj de Vos
+
+inherits			XOrg
+
+;version				1.0.3
+version				1.0.1
+headline			X11 fonts Bitstream 75dpi
+description
+	Bitstream 75dpi fonts for the X Window System.
+
+;packages			font/font-bitstream-75dpi-1.0.3
+packages			font/font-bitstream-75dpi-1.0.1
+
+build-needs
+	XFontUtilities
+	XFontBDF-to-PCF
+	XMakeFontDirectory
+
+configure-options
+	--with-fontrootdir=/resources/XFont75dpi-Bitstream/data/fonts/X11
+;	--with-fontdir=/resources/index/data/fonts/X11/75dpi
+
+documentation
+	README COPYING ChangeLog
+;	Empty:
+;	NEWS AUTHORS

@@ -1,0 +1,31 @@
+authors				Kaj de Vos
+status				testing
+
+; GPL-2 with limiting modification:
+licenses			other
+
+; Gone:
+;home				namesys.com
+locations			http://www.kernel.org/pub/linux/utils/fs/reiserfs/
+
+; For libuuid:
+needs				E2FSPrograms
+
+build-dir			.
+
+; To find E2FSPrograms:
+configure-env		CPPFLAGS "$CPPFLAGS -I/resources/index/framework/headers"
+no-datarootdir
+;configure-options	--sbindir=/sbin
+
+;super-install
+system-prefix-var	DESTDIR
+
+documentation
+	README COPYING CREDITS
+;	Empty:
+;	NEWS AUTHORS
+
+links
+	reiserfsck system-programs/fsck.reiserfs
+	mkreiserfs system-programs/mkfs.reiserfs

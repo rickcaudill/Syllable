@@ -1,0 +1,47 @@
+authors				Kaj de Vos
+status				testing
+
+; Last version that runs without serious errors:
+version				1.4.13
+locations			http://directfb.org/downloads/Core/DirectFB-1.4/
+packages			DirectFB-1.4.13
+
+needs
+;	For PThreads enhancements and fixes:
+	Syllable > 0.6.7
+	ZLib
+	SDL
+	LibraryPNG < 1.5
+build-needs
+;	AutoConfigure >= 2.52
+	AutoConfigure 2.61
+;	AutoMake
+	AutoMake 1.10.1
+	LibraryTool
+	PackageConfigure
+recommends
+	FreeType >= 2.0.1
+	LibraryJPEG
+	GIFLibrary
+	LibraryVNCServer
+	LibraryMPEG3
+	TSLibrary
+
+make-shared
+; For 1.6.0:
+;patch				./autogen.sh --version
+
+configure-options
+;	--with-sysroot=
+	--enable-sdl
+;	--disable-x11
+;	--enable-debug
+;	--enable-trace
+;	--enable-multi
+	--enable-zlib
+	--enable-unique
+	--with-tests
+;	--without-tools
+;	--with-smooth-scaling
+;	--with-dither-rgb16=
+;	--with-message-size=

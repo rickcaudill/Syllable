@@ -1,0 +1,70 @@
+authors
+	Kristian Van Der Vliet
+	Kaj de Vos
+status				testing
+warnings
+	Assumes system installation.
+	Links into the system.
+
+;inherits			sourceforge
+
+licenses			GPL+exception LGPL
+home				www.cups.org
+packages
+;	cups/cups-1.3.4-source
+	cups-1.3.4-source
+locations
+;	http://www.cups.org/software.php?VERSION=1.3.4&FILE=cups/1.3.4/
+;	California:
+	ftp://ftp.easysw.com/pub/cups/1.3.4/
+;	Braunschweig:
+	ftp://ftp.rz.tu-bs.de/pub/mirror/ftp.easysw.com/ftp/pub/cups/1.3.4/
+
+recommends
+	ZLibrary	>= 1.1.3
+	LibPNG		>= 1.0.6
+	LibJPEG		>= 6b
+	LibTIFF		>= 3.4
+	GhostScript
+	OpenSSL
+run-recommends		samba
+
+build-dir			.
+
+no-sysconfdir
+; Let other packages supply extensions:
+no-libdir
+no-datarootdir
+no-datadir
+configure-options
+	--sysconfdir=/etc
+	--localstatedir=/var
+;	--enable-ssl
+;	Still built as junk outside the system image:
+	--without-rcdir
+
+system-prefix-var	DSTROOT
+
+documentation
+	README*.txt LICENSE.* CHANGES.txt CREDITS.txt
+;	doc/*
+build-docs			INSTALL*.txt
+
+links
+;	Let other packages supply extensions:
+	../../../../system/index/framework/libraries/	lib
+	../../../../system/index/data/					share
+	/system/index/programs/smbspool					framework/libraries/cups/backend/smb
+
+delete-files
+;	4 MB web site:
+	documentation/cups/
+;	data/cups/templates/
+;	Epson & HP printers are served by Gutenprint, but we'll leave the Dymo label printer driver:
+	framework/libraries/cups/filter/rastertoepson
+	framework/libraries/cups/filter/rastertohp
+;	Same with the PPDs for those printers; we'll leave the Dymo & Zebra label printers:
+	data/cups/model/*jet*.ppd
+	data/cups/model/epson*.ppd
+	data/cups/model/okidat*.ppd
+	data/cups/model/st*.ppd

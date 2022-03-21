@@ -1,0 +1,84 @@
+diff -ru Elementary-1.0.0-original/src/examples/efl_thread_1.c Elementary-1.0.0/src/examples/efl_thread_1.c
+--- Elementary-1.0.0-original/src/examples/efl_thread_1.c	2012-04-23 16:01:51.000000000 +0200
++++ Elementary-1.0.0/src/examples/efl_thread_1.c	2012-05-25 19:10:51.000000000 +0200
+@@ -6,7 +6,7 @@
+ static Evas_Object *win = NULL;
+ static Evas_Object *rect = NULL;
+ 
+-static pthread_t thread_id;
++static pthread_t thread;
+ 
+ // BEGIN - code running in my custom pthread instance
+ //
+@@ -41,7 +41,7 @@
+ 
+    if (pthread_attr_init(&attr) != 0)
+       perror("pthread_attr_init");
+-   if (pthread_create(&thread_id, &attr, my_thread_run, NULL) != 0)
++   if (pthread_create(&thread, &attr, my_thread_run, NULL) != 0)
+       perror("pthread_create");
+ }
+ 
+diff -ru Elementary-1.0.0-original/src/examples/efl_thread_2.c Elementary-1.0.0/src/examples/efl_thread_2.c
+--- Elementary-1.0.0-original/src/examples/efl_thread_2.c	2012-04-23 16:01:51.000000000 +0200
++++ Elementary-1.0.0/src/examples/efl_thread_2.c	2012-05-25 19:10:51.000000000 +0200
+@@ -13,7 +13,7 @@
+ 
+ static void *my_thread_mainloop_code(void *data);
+ 
+-static pthread_t thread_id;
++static pthread_t thread;
+ 
+ // BEGIN - code running in my custom pthread instance
+ //
+@@ -48,7 +48,7 @@
+ 
+    if (pthread_attr_init(&attr) != 0)
+       perror("pthread_attr_init");
+-   if (pthread_create(&thread_id, &attr, my_thread_run, NULL) != 0)
++   if (pthread_create(&thread, &attr, my_thread_run, NULL) != 0)
+       perror("pthread_create");
+ }
+ 
+diff -ru Elementary-1.0.0-original/src/examples/efl_thread_3.c Elementary-1.0.0/src/examples/efl_thread_3.c
+--- Elementary-1.0.0-original/src/examples/efl_thread_3.c	2012-04-23 16:01:51.000000000 +0200
++++ Elementary-1.0.0/src/examples/efl_thread_3.c	2012-05-25 19:10:51.000000000 +0200
+@@ -13,7 +13,7 @@
+ 
+ static void my_thread_mainloop_code(void *data);
+ 
+-static pthread_t thread_id;
++static pthread_t thread;
+ 
+ // BEGIN - code running in my custom pthread instance
+ //
+@@ -51,7 +51,7 @@
+ 
+    if (pthread_attr_init(&attr) != 0)
+       perror("pthread_attr_init");
+-   if (pthread_create(&thread_id, &attr, my_thread_run, NULL) != 0)
++   if (pthread_create(&thread, &attr, my_thread_run, NULL) != 0)
+       perror("pthread_create");
+ }
+ 
+diff -ru Elementary-1.0.0-original/src/examples/efl_thread_4.c Elementary-1.0.0/src/examples/efl_thread_4.c
+--- Elementary-1.0.0-original/src/examples/efl_thread_4.c	2012-04-23 16:01:51.000000000 +0200
++++ Elementary-1.0.0/src/examples/efl_thread_4.c	2012-05-25 19:10:51.000000000 +0200
+@@ -13,7 +13,7 @@
+ 
+ static void my_thread_mainloop_code(void *data);
+ 
+-static pthread_t thread_id;
++static pthread_t thread;
+ static pthread_mutex_t th_lock;
+ static int th_exit = 0;
+ 
+@@ -62,7 +62,7 @@
+    pthread_mutex_init(&th_lock, NULL);
+    if (pthread_attr_init(&attr) != 0)
+       perror("pthread_attr_init");
+-   if (pthread_create(&thread_id, &attr, my_thread_run, NULL) != 0)
++   if (pthread_create(&thread, &attr, my_thread_run, NULL) != 0)
+       perror("pthread_create");
+ }
+ 

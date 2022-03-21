@@ -1,0 +1,86 @@
+authors				Kaj de Vos
+warnings			Hardwired to run in /resources/!
+
+inherits			XOrg
+
+; Last one with KDrive SDL backend:
+version				1.7.1
+headline			X11 Window System display server
+description
+	The X.Org project provides an open source implementation of the X Window System.
+
+packages			xserver/xorg-server-1.7.1
+
+needs
+	OpenSSL
+	PixelManipulation
+;	Doesn't link to it:
+	LibraryX11
+	LibraryXAuthorization
+	LibraryXKeyboardFile
+	LibraryXFonts
+;	For XOrg server:
+	LibraryX-PCI-Access
+build-needs
+	XProtocol >= 7.0.13
+	XExtensionsProtocol
+	XBigRequestsProtocol
+	XCMiscProtocol
+	XInputProtocol
+	XKeyboardProtocol
+	XRAndRProtocol
+	XFixesProtocol
+	XDamageProtocol
+	XFontsProtocol
+	XRenderProtocol
+	XTransport
+;	For XOrg server:
+	XVideoProtocol
+run-needs
+	XKeyboardConfigure
+	XKeymapCompiler
+recommends
+	GLib
+	Mesa3D
+	SDL
+
+patch				sed -i 's/chown root /chown system /' hw/xfree86/Makefile.in
+
+;no-bindir
+no-libdir
+no-datarootdir
+no-datadir
+configure-options
+;	--with-os-name=
+	--enable-install-setuid
+;	--with-module-dir= /xorg/modules
+	--with-xkb-bin-directory=/resources/index/programs
+	--with-xkb-output=/var/lib/xkb
+	--with-fontdir=/resources/index/data/fonts/X11
+;	--with-default-font-path=
+;	--disable-ipv6
+;	--disable-unix-transport
+	--enable-kdrive
+;	--enable-xsdl
+;	--disable-xorg
+;	--disable-xvfb
+	--disable-dri
+;	--disable-dri2
+	--disable-glx
+;	--disable-mitshm
+	--disable-xres
+;	--disable-xf86bigfont
+	--disable-composite
+	--disable-screensaver
+	--disable-xinerama
+;	Broken for XOrg server:
+;	--disable-xv
+;	--disable-xvmc
+
+documentation		COPYING ChangeLog
+
+links
+;	For xkbcomp:
+;	/resources/index/programs/				bin
+	/resources/index/framework/libraries/	lib
+	/resources/index/data/					share

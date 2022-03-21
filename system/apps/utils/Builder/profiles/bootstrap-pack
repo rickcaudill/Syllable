@@ -1,0 +1,17 @@
+title				The Bootstrap Bundle
+
+name				BootstrapBundle
+headline			Packages for building the system
+description
+	Packages needed for building the system, in addition to the standard collection packs.
+
+modules
+;	For Boron:
+	programming/cmake-2.4.8
+
+;	For SDL on Desktop:
+	libraries/LibPNG-1.2.37
+	libraries/libtiff-3.8.2
+
+;	For PythonGObject when in Workstation:
+;	programming/Python-2.6.4

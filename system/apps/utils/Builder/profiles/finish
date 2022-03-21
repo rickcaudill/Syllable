@@ -1,0 +1,20 @@
+; Parts to complete a system build
+; Build the finish-su profile before this!
+
+resources
+;	Make GLibC suitable for running in an installed system:
+	system/resources/glibc/2.7/framework/libraries/ libc.so
+
+finish
+;	Make home directories private:
+	chmod -R o-rwx home/.template home/root &&
+
+	cp resources/grub/framework/libraries/grub/i386-pc/* boot/grub/ &&
+
+	rm -r resources/documentation/ resources/documentation-* &&
+	rm resources/index/documentation resources/index/documentation-* etc/Makefile system/icons/Makefile &&
+
+;	Linux binary compatibility hack allows running some binary Linux libraries:
+	ln -s /system/index/lib/libc.so.2	system/libraries/libc.so.6 &&
+	ln -s /system/index/lib/libm.so.2	system/libraries/libm.so.6 &&
+	ln -s libdl.so.3					system/libraries/libdl.so.2

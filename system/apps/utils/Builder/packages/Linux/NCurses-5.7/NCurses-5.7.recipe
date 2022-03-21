@@ -1,0 +1,54 @@
+authors				Kaj de Vos
+status				testing
+warnings			Specific to GLibC 2.7!
+
+configure-options
+	--with-shared
+;	--without-debug
+;	--enable-reentrant
+;	--with-pthread
+;	For XTerm?:
+;	--with-termlib
+	--enable-widec
+	--enable-symlinks
+;	--datadir=/usr/share
+	--with-default-terminfo-dir=/usr/share/terminfo
+
+links
+;	For older packages:
+	libncursesw.a							framework/libraries/libncurses.a
+	libncurses++w.a							framework/libraries/libncurses++.a
+	libcursesw.a							framework/libraries/libcurses.a
+	libformw.a								framework/libraries/libform.a
+	libpanelw.a								framework/libraries/libpanel.a
+	libmenuw.a								framework/libraries/libmenu.a
+	libncurses.so							framework/libraries/libcurses.so
+	libncursesw.a							framework/libraries/libcursesw.a
+	libncurses.a							framework/libraries/libcurses.a
+	ncursesw/ncurses.h						framework/headers/
+	ncursesw/curses.h						framework/headers/
+;	For ProcPS:
+	ncursesw/term.h							framework/headers/
+;	For Python:
+	ncursesw/panel.h						framework/headers/
+;	For INetUtils:
+;	framework/headers/ncursesw/				/usr/include/
+;	For LinuxTree:
+	programs/clear							/usr/bin/
+;	For S-Lang:
+;	data/terminfo/							/usr/share/
+	ncursesw5-config						programs/ncurses5-config
+;	Linked into BASh, which is called before the loader path is set:
+	framework/libraries/libncursesw.so.5	/system/resources/glibc/2.7/framework/libraries/
+;;	framework/libraries/libtinfow.so.5		/system/resources/glibc/2.7/framework/libraries/
+;	Gobo binary compatibility:
+	libncursesw.so.5						framework/libraries/libncurses.so.5
+;	libtinfow.so.5							framework/libraries/libtinfo.so.5
+
+pre-register
+	echo 'INPUT(-lncursesw)'	| sudo dd of=framework/libraries/libncurses.so	&&
+;	echo 'INPUT(-lcursesw)'		| sudo dd of=framework/libraries/libcurses.so	&&
+	echo 'INPUT(-lformw)'		| sudo dd of=framework/libraries/libform.so		&&
+	echo 'INPUT(-lpanelw)'		| sudo dd of=framework/libraries/libpanel.so	&&
+	echo 'INPUT(-lmenuw)'		| sudo dd of=framework/libraries/libmenu.so		&&
+	echo 'INPUT(-lncursesw)'	| sudo dd of=framework/libraries/libcursesw.so

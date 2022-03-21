@@ -1,0 +1,34 @@
+authors				Kaj de Vos
+status				testing
+warnings
+	Assumes system installation!
+	Install messes with the permissions of /dev/null in the running system!
+	Tries to find NCurses in /usr/include/ncurses
+
+licenses			GPL LGPL
+
+home				procps.sourceforge.net
+locations			http://procps.sourceforge.net
+
+needs				NCurses
+
+super-install
+system-prefix-var	DESTDIR
+
+install-tree
+install-vars
+	bin				$IMAGE/system/resources/procps/3.2.7/programs/
+	usr/bin			$IMAGE/system/resources/procps/3.2.7/programs/
+	usr/proc/bin	$IMAGE/system/resources/procps/3.2.7/programs/
+	sbin			$IMAGE/system/resources/procps/3.2.7/system-programs/
+	lib				$IMAGE/system/resources/procps/3.2.7/framework/libraries/
+	usr/lib			$IMAGE/system/resources/procps/3.2.7/framework/libraries/
+;	There don't seem to be any:
+	usr/include		$IMAGE/system/development/resources/procps/3.2.7/framework/headers/
+;	usr/include		$IMAGE/system/resources/procps/3.2.7/framework/headers/
+	man1			$IMAGE/system/resources/procps/3.2.7/manuals/man1/
+	man5			$IMAGE/system/resources/procps/3.2.7/manuals/man5/
+	man8			$IMAGE/system/resources/procps/3.2.7/manuals/man8/
+
+documentation		README README.top COPYING COPYING.LIB NEWS BUGS TODO AUTHORS
+internal-docs		CodingStyle

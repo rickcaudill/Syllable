@@ -1,0 +1,25 @@
+authors				Kaj de Vos
+status				testing
+
+inherits			Enlightenment--current
+
+headline			Enlightenment's device library
+description
+	Eeze is a library for manipulating devices through udev with a simple and fast api. It interfaces directly with libudev, avoiding such middleman daemons as udisks/upower or hal, to immediately gather device information the instant it becomes known to the system.
+licenses			BSD
+
+home				trac.enlightenment.org/e/wiki/Eeze
+packages			eeze-1.7.5
+
+needs
+	Eina
+	ECore
+	UDevices
+recommends
+	LibraryMount
+
+documentation
+	README COPYING NEWS ChangeLog AUTHORS TODO
+;	doc/
+;	Empty:
+;	ABOUT-NLS

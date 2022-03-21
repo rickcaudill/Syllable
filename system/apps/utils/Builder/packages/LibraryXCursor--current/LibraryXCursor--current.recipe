@@ -1,0 +1,22 @@
+authors				Kaj de Vos
+
+inherits			XOrg
+
+version				1.1.10
+headline			X11 cursor library
+description
+	libXcursor - X Window System Cursor management library.
+
+packages			lib/libXcursor-1.1.10
+
+needs
+	LibraryX11
+	LibraryXFixes
+	LibraryXRender
+build-needs
+	XFixesProtocol
+
+documentation
+	README COPYING ChangeLog AUTHORS
+;	Empty:
+;	NEWS

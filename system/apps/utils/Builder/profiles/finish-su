@@ -1,0 +1,5 @@
+; Parts to complete a system build
+; Build this as root before the finish profile
+
+modules
+	system CoreUtilities-6.7-su

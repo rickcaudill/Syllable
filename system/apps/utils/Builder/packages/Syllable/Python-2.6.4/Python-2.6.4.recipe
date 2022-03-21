@@ -1,0 +1,28 @@
+authors
+	Octavian Cerna
+	Kaj de Vos
+	Jamie Clarkson
+	Jake Hamby
+maintainers			Kaj de Vos
+status				broken
+notes
+	See README for GLibC issues.
+	Still complains that internal LibraryFFI hasn't been ported yet.
+	Since Syllable 0.6.6 configure says getaddrinfo() is buggy.
+	Build fails with locking errors after a process fork.
+
+needs
+;	For exit_thread() in syllable/threads.h:
+	Syllable >= 0.6.7
+	LibraryFFI
+build-needs			AutoConfigure >= 2.53
+
+patch				autoconf
+
+configure-options
+	--enable-shared
+;	--with-threads=syllable
+	--with-system-ffi
+;	--with-libs=
+;	Needed on Syllable 0.6.6:
+	--disable-ipv6

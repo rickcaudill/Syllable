@@ -1,0 +1,24 @@
+authors				Kaj de Vos
+status				testing
+notes
+	Doesn't support thread priorities yet.
+	2.31 series doesn't build.
+
+build-needs
+;	AutoConfigure >= 2.62
+	AutoConfigure 2.68
+;	AutoMake
+	AutoMake 1.11.3
+	LibraryTool
+;	LibraryTool 2.4.2
+	PackageConfigure >= 0.16
+	Python >= 2.5
+
+make-shared
+
+_configure-options
+	--with-threads=posix
+;	--with-pcre=system
+;	--enable-gtk-doc
+
+make-env			DLL_PATH "$DLL_PATH:$PWD/gthread/.libs:$PWD/glib/.libs"

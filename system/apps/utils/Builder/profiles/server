@@ -1,0 +1,10 @@
+; Syllable Server, in addition to linux/base/gui-linux/gui-base profiles
+
+modules
+;	Extra goodies
+
+	apps/other/Links-2.3pre1
+	apps/other/pengupop-2.1.12
+
+;	Needs GCC 3:
+;	apps/other/QEmulator-0.9.1

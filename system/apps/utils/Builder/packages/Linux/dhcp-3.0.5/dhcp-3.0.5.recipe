@@ -1,0 +1,15 @@
+authors				Kaj de Vos
+status				testing
+warnings			dhclient-script can't find sleep for some strange reason.
+
+needs
+;	net-tools
+	iproute2
+
+; For LFS boot scripts:
+links
+	system-programs/dhclient		/sbin/
+	system-programs/dhclient-script	/sbin/
+;	Server:
+	system-programs/dhcpd			/usr/sbin/
+;	system-programs/dhcrelay		/usr/sbin/

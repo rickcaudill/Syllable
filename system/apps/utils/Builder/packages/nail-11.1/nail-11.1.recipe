@@ -1,0 +1,29 @@
+authors
+	Mike Saunders
+	Kaj de Vos
+status				testing
+warnings			Doesn't adapt configuration directory when building in staging area.
+notes				Can't find OpenSSL
+
+inherits			sourceforge
+
+headline			Command-driven mail client
+licenses			BSD
+home				nail.sourceforge.net
+packages			nail/nail-11.1
+
+;build-needs			OpenSSL
+
+install-prefix-var	PREFIX
+
+make-vars
+	SYSCONFDIR		/resources/nail/settings
+;	INCLUDES		-I/resources/OpenSSL/framework/headers/openssl
+
+system-prefix-var	DESTDIR
+
+install-vars
+	SYSCONFDIR		/resources/nail/settings
+	UCBINSTALL		/resources/index/programs/install
+
+documentation		README I18N INSTALL COPYING ChangeLog TODO AUTHORS nail.1.html

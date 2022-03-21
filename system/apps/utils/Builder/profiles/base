@@ -1,0 +1,132 @@
+; Syllable base platform, in addition to syllable or linux profiles
+
+; Root tree structure to build the distribution in
+
+tree
+;	Boot directory structure
+
+	boot/grub
+
+;	Main directory structure
+
+;	documentation/images
+	documentation/manuals
+
+;	FHS:
+;	etc/grub
+	etc/s3conf
+
+	system/resources/catalogs/bg
+	system/resources/catalogs/da
+	system/resources/catalogs/de
+	system/resources/catalogs/el
+	system/resources/catalogs/en-gb
+	system/resources/catalogs/es
+	system/resources/catalogs/fr
+	system/resources/catalogs/fy
+	system/resources/catalogs/hu
+	system/resources/catalogs/nl
+	system/resources/catalogs/pl
+	system/resources/catalogs/pt-br
+	system/resources/catalogs/ro
+	system/resources/catalogs/ru
+	system/resources/catalogs/sv
+	system/resources/catalogs/zh-cn
+
+	system/programs
+	system/libraries
+
+;	For third-party software managers:
+	usr/etc
+	usr/libexec
+;	(For terminfo:)
+	usr/share
+	usr/man
+	usr/info
+
+;	For manually compiled software:
+	usr/local/etc
+;	For Perl?
+	usr/local/bin
+	usr/local/sbin
+	usr/local/libexec
+	usr/local/lib
+	usr/local/include
+	usr/local/share
+	usr/local/man
+	usr/local/info
+
+resources
+	boot/grub/		menu.lst					text/plain
+	etc/s3conf/		configuration/s3config.yml	text/plain
+;	Servers:
+	etc/			configuration/vsftpd.conf	text/plain
+	etc/			configuration/rsyncd.conf	text/plain
+
+modules
+	documentation--current
+	documentation-ES--current
+
+;	Overwrites profile:
+	other/config/etc
+
+;	For rescopy:
+	apps/gnu/BinaryUtilities-2.19-objcopy
+
+	system libs/NCurses-5.7
+	system libs/ReadLine-6.0
+
+	system apps/gnu/CoreUtilities-6.7
+	system apps/gnu/BASh-4.0
+	apps/gnu/SEd-4.2.1
+	system apps/other/UnZip-6.0
+
+	apps/gnu/bzip2-1.0.5
+	system REBOL/Boron--current
+	system REBOL/ORCA--current
+
+	apps/utils/man2html
+	system apps/utils/Packager
+
+;	Used by LFS boot scripts, but not essential:
+	apps/gnu/FindUtils-4.4.2
+
+;	For grub-install:
+	apps/gnu/diffutils-2.8.1
+
+
+;	Syllable base distribution, in addition to core system
+
+	other/data/MIME-Support--current
+	other/data/CA-Bundle--current
+
+	system apps/other/cURL--current
+	apps/gnu/INetUtils-1.6
+	apps/other/msntp-1.6
+	apps/other/SQLite--current
+	apps/other/Fossil--current
+	apps/other/NetCat-1.10
+	apps/other/Transmission-1.72
+
+	apps/utils/Man
+	apps/other/MkTemp-1.6
+	apps/gnu/Less-429
+
+	apps/gnu/gzip-1.3.12
+	apps/other/Zip-3.0
+	apps/other/7-Zip-9.04
+	apps/other/XZ-Utilities-4.999.9beta
+	apps/gnu/TAr-1.22
+
+	apps/other/CDRTools-2.01.01a61
+
+
+;	Binaries
+	REBOL/REBOL-Core--current
+
+
+;	REBOL library
+	REBOL/cURL-Binding--current
+
+;	ORCA/REBOL library
+;	REBOL/tiny--current

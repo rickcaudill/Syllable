@@ -1,0 +1,46 @@
+authors				Kaj de Vos
+status				testing
+
+licenses			LGPL-2+
+
+home				www.directfb.org
+locations
+	http://www.directfb.org/downloads/Core/
+	http://downloads.syllable.org/sources/resources/DirectFrameBuffer/
+	http://buildroot.net/downloads/sources/
+packages			DirectFB-1.0.0
+
+needs
+	linux >= 2.2
+	linux-fusion
+	zlib
+recommends
+;	sdl
+	libvncserver
+	libsysfs
+	FreeType >= 2.0.1
+	LibJPEG
+	LibPNG
+	GIFLib
+	libmpeg3
+	tslib
+build-recommends	pkg-config >= 0.9.0
+
+configure-options
+;	We want SDL on DirectFB, not the other way around:
+	--disable-sdl
+;	--disable-x11
+;	--enable-debug
+;	--enable-trace
+;	--enable-multi
+	--enable-zlib
+	--enable-unique
+;	--with-tests
+;	--without-tools
+
+system-prefix-var	DESTDIR
+
+documentation
+	README COPYING NEWS ChangeLog AUTHORS TODO
+;	docs
+build-docs			patches/README.*

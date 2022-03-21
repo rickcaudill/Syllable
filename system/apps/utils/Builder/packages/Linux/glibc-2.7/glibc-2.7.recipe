@@ -1,0 +1,34 @@
+authors				Kaj de Vos
+status				testing
+warnings
+	Will mess with /etc/ld.so.conf and /var/backups/ in the running system!
+
+configure-options
+	--with-arch=i486
+	--enable-kernel=2.6.0
+;	Kernel headers:
+;	--with-headers=/usr/include
+	--enable-add-ons
+	--sysconfdir=/etc
+	--disable-profile
+;	--with-binutils=/usr/bin
+;	--without-cvs
+;	Prevent linking against the host:
+;	--without-gd
+;	--without-selinux
+;	Path of pt_chown:
+;	--libexecdir=/usr/lib/glibc
+
+links
+;	Internal relative links are broken:
+	framework/libraries/				lib
+	framework/libraries/ld-linux.so.2	/lib/
+;	For GCC. Sigh:
+	framework/headers/limits.h			/usr/include/
+;	For PERL. Double sigh:
+	framework/headers/errno.h			/usr/include/
+;	For SysVInit:
+	framework/libraries/libcrypt.a		/usr/lib/
+;	For GhostScript. Triple sigh:
+	framework/headers/sys/dir.h			/usr/include/sys/
+	framework/headers/sys/time.h		/usr/include/sys/

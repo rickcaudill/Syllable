@@ -1,0 +1,420 @@
+ORCA [
+	Title:		"Package installation library"
+	Version:	0.8.3
+	Author:		"Kaj de Vos"
+	Rights: {
+		Copyright (c) 2006-2010 Kaj de Vos
+		License: LGPL
+	}
+	Purpose:	"Registers and unregisters packages by managing pools of symbolic links."
+	Example:	"do %/system/index/framework/REBOL/package.library"
+
+	Tabs:		4
+]
+
+log: context [  ; Singleton logger object
+	open: func [] [
+	]
+	close: does [
+	]
+
+	header: func [header] [
+		prin newline
+		print header
+	]
+	detail: func [detail] [
+;		print detail
+	]
+	action: func [action] [
+;		prin newline
+;		print action
+;		prin newline
+	]
+	output: func [output] [
+	]
+	error: func [error] [
+		prin newline
+		print ["Error:" error]
+	]
+	warning: func [warning] [
+		prin newline
+		print ["Warning:" warning]
+	]
+	failure: func [module] [
+		prin newline
+		print ["Package" module "failed!"]
+	]
+]
+
+symlink?: func ["Tests a file to be a symbolic link."
+	node [file! string!] "File or directory"
+	/local stdout
+][
+;	FIXME: stderr on non-existing files is too intrusive but can't be caught:
+	all [0 = call/wait/output  join "stat --format %F " node  stdout: copy ""
+		stdout = "symbolic link^/"
+	]
+]
+
+action: func ["Returns the output of a shell command, or false if unsuccessful."
+	command "Shell command"
+	/local status stdout
+][
+	log/action command
+
+	either 0 = status: call/wait/output command  stdout: copy "" [
+;		FIXME?: ORCA call/output bug:
+		log/output stdout
+		stdout
+	][
+		log/error status
+		log/output stdout
+		no
+	]
+]
+
+build: context [
+	system?: no
+]
+
+stage-proto: context [
+	image?: none
+	packages: %/resources/
+	indexes: %/resources/index/
+
+	new: func ["Returns a new stage object; by default of the general resource packages in the running system."
+		packages' [file! string! none!]
+		indexes' [file! string! none!]
+	][
+		make self [
+			indexes: dirize to-file any [indexes' indexes]
+			packages: to-string any [packages' packages]
+
+			if image?: to-logic find indexes "/stage/image/" [
+;				ORCA FIXME: FIND works in indexes but only in packages as string?
+;				ORCA TODO: implement find/tail:
+				packages: at  find packages "/stage/image/"  13
+			]
+			packages: dirize to-file packages
+		]
+	]
+
+	select-package: func [package
+		/local target
+	][
+		all [
+			any [not exists? target: join indexes package/name
+				(
+					log/warning join "conflict: replacing " target
+					action join "rm " target
+				)
+			]
+			action reform [
+				"ln --symbolic"
+				either image? [join packages package/full-name] [package/path]
+				target
+			]
+		]
+	]
+
+	deselect-package: func [package
+		/local target
+	][
+		either exists? target: join indexes package/name [
+			action join "rm " target
+		][
+			log/warning reform ["link" target "did not exist."]
+			yes
+		]
+	]
+
+	index-node: func [package node
+		/local source target index
+	][
+		source: join package/root index: rejoin [package/full-name "/" node]
+		target: join indexes node
+
+		either all [exists? source  dir? source] [
+			either exists? target [
+;				TODO: detect a symlink:
+;				if symlink? target [log/warning reform ["directory" target "is a link."]]
+				yes
+			][
+;				if dir? target [log/warning join "replacing broken directory link " target]
+				action join "mkdir " target
+			]
+		][
+			either all [node = "manuals/info/dir"  exists? target] [
+				log/warning "manuals/info/dir file not registered due to pre-existing version."
+				yes
+			][
+				all [
+;					either any [exists? target  symlink? target] [
+					either exists? target [
+						log/warning join "conflict: replacing " target
+						action join "rm " target
+					][
+;						TODO: detect directory or symlink to directory:
+;						if dir? target [log/error join "trying to replace directory " target]
+						yes
+					]
+					action reform [
+						"ln --symbolic"
+						either image? [join packages index] [source]
+						target
+					]
+				]
+			]
+		]
+	]
+
+	remove-node: func [subdir file
+		/local node index
+	][
+		index: join indexes  node: rejoin [subdir "/" file]
+
+;		TODO: detect a symlink:
+		either all [exists? index  dir? index] [
+			any [
+;				FIXME: bug in ORCA list comparison:
+;				(read index) <> []  ; index directory not empty?
+				not empty? read index
+;				action join "rmdir " index
+				; May be a symlink from old package manager:
+				action join "rm --recursive " index
+			]
+		][
+;			TODO: detect a symlink:
+;			either file? file [
+			either image? or exists? index [
+				either node = "manuals/info/dir" [
+					log/warning "manuals/info/dir file left untouched."
+					yes
+				][
+					action join "rm " index
+					yes  ; Don't consider an error fatal for now
+				]
+			][
+				log/warning reform ["link" index "did not exist."]
+				yes
+			]
+		]
+	]
+]
+
+resources-stage: stage-proto/new none none
+
+package-image: context [
+	path: root: full-name: name: version: development?: this-stage: none
+
+	all-flat-dirs:	 join flat-dirs:	[programs system-programs applications] ['bin 'sbin]
+	all-nested-dirs: join nested-dirs:	[settings framework data tasks manuals] ['lib 'include]
+
+	new: func ["Returns a new package image object."
+		package' [string! file!]  "Name or full path"
+		/stage stage' [object!]  "Defaults to the host system."
+		/local where
+	][
+		unless stage [stage': resources-stage]
+
+		if #"/" = last package': to-file package' [clear back tail package']  ; Chop any trailing slash
+
+		make self  either where: find/last package' #"/" [  ; Package path given?
+			[
+				path: package'
+				root: copy/part package' next where
+
+;				TODO: use PARSE:
+				if all [integer? first load to-string first full-name: name: to-string next where
+					not find name #"-"  ; Filter out 7-Zip and such
+				][	; Versioned package
+					version: name
+					clear back tail root
+
+					either where: find/last root #"/" [
+						full-name: rejoin [name: to-string next where  "/" version]
+						clear next where
+					][
+						name: to-string root
+						path: join
+							root: resources-stage/packages
+							full-name: rejoin [name "/" version]
+					]
+				]
+				development?: find root "/development/"
+				this-stage: stage'
+			]
+		][
+			[
+				full-name: name: to-string package'
+				path: join  root: resources-stage/packages  package'
+				this-stage: stage'
+			]
+		]
+	]
+
+	register: func ["Indexes the package into the staging areas."
+		/stages targets [block!]
+		/local stage manuals
+	][
+		log/header join "Registering " path
+
+		either all [
+			do-subdirs :index-dir stages: either stages [targets] [reduce [this-stage]]
+			any [
+				root <> resources-stage/packages  ; TODO: generate staged and system manuals
+				not exists? manuals: join path "/manuals"  ; FIXME: detect info/ only
+				(
+					log/header "Generating HTML manuals"
+;					FIXME: staged manuals are linked into the host system:
+					action join "manmanager -a " manuals
+				)
+			]
+			any [development?
+				(	log/detail "Setting main package registration"
+
+					foreach stage stages [
+						unless stage/select-package self  ; TODO: detect conflict before registering files
+							[break]
+					]
+				)
+			]
+		][
+			action "sync"
+		][
+			log/failure path
+			no
+		]
+	]
+
+	unregister: func ["Unlinks the package from the staging areas."
+		/stages targets [block!]
+		/local stage manuals
+	][
+		log/header join "Unregistering " path
+
+		stages: either stages [targets] [reduce [this-stage]]
+
+		either all [
+			any [development?
+				(	log/detail "Removing main package registration"
+
+					foreach stage stages [
+						unless stage/deselect-package self
+							[break]
+					]
+				)
+			]
+			any [root <> resources-stage/packages  ; TODO: remove staged and system manuals
+				not exists? manuals: join path "/manuals"  ; FIXME: detect info/ only
+				(
+					log/header "Deleting HTML manuals"
+;					FIXME: manmanager fails on deleting non-existing manuals?
+					action join "manmanager -r " manuals
+				)
+			]
+			do-subdirs :remove-dir stages
+		][
+			action "sync"
+		][
+			log/failure path
+			no
+		]
+	]
+
+
+	do-subdirs: func [task stages
+		/local dir legacy?
+	][
+		legacy?: all [1 = length? stages  ; Only support legacy dirs with single stage
+			find reduce [resources-stage/packages %/usr/] get in stages/1 'packages
+		]
+		foreach dir  either legacy? [all-flat-dirs] [flat-dirs] [
+;			FIXME: ORCA bug: errors don't propagate from TASK:
+			unless task stages dir no
+				[return no]
+		]
+		foreach dir  either legacy? [all-nested-dirs] [nested-dirs] [
+			unless task stages dir yes
+				[return no]
+		]
+		yes
+	]
+
+	index-dir: func [stages subdir nesting?
+		/local dir entry node stage
+	][
+		any [not exists? dir: rejoin [path "/" subdir]  ; Skip non-existing (top level) directories
+			not dir? dir  ; Skip (top level) files instead of directories
+			symlink? dir  ; Skip symlinks
+			(
+				log/detail join "Processing subdirectory " subdir
+				change-dir dir
+
+				foreach entry read %. [
+					node: rejoin [subdir "/" entry]
+
+					either all [exists? entry  dir? entry] [
+						if all [nesting?  entry <> %CVS] [  ; Skip CVS directories
+							foreach stage stages [
+								unless stage/index-node self node
+									[return no]
+							]
+							unless index-dir stages node yes
+								[return no]
+							change-dir dir
+						]
+					][	; File or dangling symlink
+						; Skip backup files and CVS control files
+;						ORCA FIXME: implement find/case
+						unless any [#"~" = last entry  find [%.cvsignore] entry] [
+							foreach stage stages [
+								unless stage/index-node self node
+									[return no]
+							]
+						]
+					]
+				]
+				yes
+			)
+		]
+	]
+
+	remove-dir: func [stages subdir nesting?
+		/local dir entry stage
+	][
+		any [not exists? dir: rejoin [path "/" subdir]  ; Skip non-existing (top level) directories
+			not dir? dir  ; Skip (top level) files instead of directories
+			symlink? dir  ; Skip symlinks
+			(
+				log/detail join "Processing subdirectory " subdir
+				change-dir dir
+
+				foreach entry read %. [
+					either all [exists? entry  dir? entry] [
+						if all [nesting?  entry <> %CVS] [  ; Skip CVS directories
+							unless remove-dir stages  rejoin [subdir "/" entry]  yes
+								[return no]
+							change-dir dir
+
+							foreach stage stages [
+								unless stage/remove-node subdir entry
+									[return no]
+							]
+						]
+					][	; File or dangling symlink
+						; Skip backup files and CVS control files
+;						ORCA FIXME: implement find/case
+						unless any [#"~" = last entry  find [%.cvsignore] entry] [
+							foreach stage stages [
+								unless stage/remove-node subdir entry
+									[return no]
+							]
+						]
+					]
+				]
+				yes
+			)
+		]
+	]
+]

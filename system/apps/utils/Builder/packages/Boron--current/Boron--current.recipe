@@ -1,0 +1,106 @@
+authors				Kaj de Vos
+status				testing
+warnings			Gitorious fails at first attempt to download daily source to wait for package generation.
+notes				Documentation can be built in doc/ directory
+
+version				0.2.3current
+headline			Interpreted, prototype-based language similar to REBOL
+description
+	Boron is an interpreted, prototype-based, scripting language similar to Rebol. The interpreter and datatype system is a C library useful for building domain specific languages embedded in C/C++ applications.
+licenses
+;	Interpreter:
+	LGPL-3+
+;	Some support libraries:
+	BSD
+	PD
+;	Programs:
+	GPL-3+
+;	M2:
+;	MIT
+
+home				urlan.sf.net/boron/
+locations
+	http://urlan.sourceforge.net/boron/doc/
+	http://gitorious.org/boron/boron/
+;archives			git clone git://gitorious.org/boron/boron.git
+; First attempt fails to wait for generation!
+packages			archive-tarball/master
+files
+	UserManual.html
+	func_ref.html
+	UserManualGL.html
+	func_ref_gl.html
+
+_needs
+;	For eventfd:
+	GLibC >= 2.8
+	ZLib | BZip2
+build-needs
+;	M2 & Boron | CMake >= 2.6
+	DoxyGen
+recommends
+	ReadLine
+	LibJIT
+	Qt
+	OpenGL
+	OpenAL
+	Vorbis
+build-recommends
+	Python-DocUtils
+	LaTeX
+
+_patch
+;	mv m2-498/m2			configure &&
+;	cp m2-498/m2_linux.r	m2_template.r &&
+;	Uncomment os_call in config.r, and possibly math3d and number_arrays and rebol
+;	rebol 					boot_str.r
+
+; For generated makefiles:
+build-dir			.
+
+; configure doesn't take --prefix:
+configure-args
+configure-options
+;	Boron needs to be in /usr/bin/ to run M2 from configure
+;	Doesn't create shared library:
+	--make
+;	Requires eventfd:
+;	--cmake
+;	--gnu-readline
+	--thread
+;	--bzip2
+;	--assemble
+	--timecode
+
+pre-make
+	cd doc &&
+	make
+;	make dox html pdf
+
+install-tree
+	programs
+;	framework/libraries
+;	framework/headers/boron
+install				true
+install-files
+	boron				programs/
+;	libboron.so.0.2.3	framework/libraries/
+;	boron.h				framework/headers/boron/
+;	urlan/urlan.h		framework/headers/boron/
+;	urlan/urlan_atoms.h	framework/headers/boron/
+;	urlan/bignum.h		framework/headers/boron/
+
+_links
+	libboron.so.0.2.3	framework/libraries/libboron.so.0
+	libboron.so.0.2.3	framework/libraries/libboron.so
+
+documentation		LICENSE LICENSE.GPL
+develop-docs
+	*.html doc/*.rst
+	doc/dev_manual
+	doc/html/
+;	doc/latex/
+;	examples/
+	doc/boron.vim
+
+;pre-register		sed -i 's~"urlan.h"~<boron/urlan.h>~' framework/headers/boron/boron.h

@@ -1,0 +1,34 @@
+authors
+	Kurt Skauen
+	Kristian Van Der Vliet
+	Jack Tonkin
+	Kaj de Vos
+maintainers			Kaj de Vos
+
+licenses			GPL
+home				www.gnu.org/software/grub/
+locations			ftp://alpha.gnu.org/gnu/grub/
+
+build-needs
+;	AutoMake >= 1.8.2
+	AutoMake >= 1.7 < 1.10
+	AutoConfigure >= 2.57
+run-needs			diffutils
+recommends			NCurses
+build-recommends	texinfo >= 4.0
+
+patch				autoreconf
+
+; Problems are known with optimisation:
+configure-env		CFLAGS ''
+no-datarootdir
+make-env			CFLAGS ''
+
+system-prefix-var	DESTDIR
+
+documentation		README BUGS COPYING NEWS ChangeLog TODO AUTHORS THANKS
+build-docs			INSTALL netboot/README.netboot
+internal-docs		MAINTENANCE
+
+; FHS:
+;links				/boot/grub/menu.lst /etc/grub/

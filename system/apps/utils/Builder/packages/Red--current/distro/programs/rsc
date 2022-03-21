@@ -1,0 +1,4 @@
+#! /bin/sh
+
+r2 -sw /resources/Red/framework/REBOL/red-system/rsc.r $1 $2 $3 $4 $5 $6
+echo 'Any compilation results are in /resources/Red/framework/REBOL/red-system/builds/'

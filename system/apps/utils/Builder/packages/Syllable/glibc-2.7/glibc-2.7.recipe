@@ -1,0 +1,34 @@
+authors
+	Kristian Van Der Vliet
+	Kaj de Vos
+status				testing
+notes				Locales are not installed (in lib/locale/)
+
+needs				Syllable >= 0.6.5
+
+;patch				autoconf
+
+configure-options
+	--with-arch=i586
+	--enable-hacker-mode
+	--enable-add-ons=syllable
+	--sysconfdir=/etc
+;	--disable-profile
+;	--with-headers=/usr/include
+	--without-cvs
+;	There is no TLS support on Syllable:
+	--without-__thread
+;	Prevent linking against the host:
+;	--without-gd
+;	--with-cpu=
+;	--enable-bounded
+
+links
+;	Internal relative links are broken:
+	framework/libraries/											lib
+;	For init:
+	/boot/system/resources/glibc/2.7/framework/libraries/libc.so.2	/system/libraries/
+;	/boot/system/resources/glibc/2.7/framework/libraries/libm.so.2	/system/libraries/
+;	For GhostScript:
+	framework/headers/sys/dir.h										/usr/include/sys/
+	framework/headers/sys/time.h									/usr/include/sys/

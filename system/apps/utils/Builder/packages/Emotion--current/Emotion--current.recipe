@@ -1,0 +1,35 @@
+authors				Kaj de Vos
+status				testing
+
+inherits			Enlightenment--current
+
+headline			Enlightenment's audio and video integration
+description
+	Emotion is a library to easily integrate media playback into EFL applications. It will take care of using Ecore's main loop and video display is done using Evas.
+licenses			BSD
+
+home				trac.enlightenment.org/e/wiki/Emotion
+packages			emotion-1.7.5
+
+needs
+	Eina
+	EET
+	Evas
+	ECore
+;	For test application:
+	Edje
+
+configure-options
+;	--enable-xine
+;	--enable-gstreamer
+;	--enable-vlc
+;	edje_cc bombs out:
+;	--disable-emotion-test
+	--enable-build-examples
+
+documentation
+	README COPYING ChangeLog AUTHORS TODO
+;	doc/
+;	Empty:
+;	ABOUT-NLS NEWS
+build-docs			INSTALL

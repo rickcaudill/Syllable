@@ -1,0 +1,50 @@
+authors				Kaj de Vos
+status				testing
+;warnings			Assumes system installation!
+
+licenses			GPL-2+
+
+locations			ftp://ftp.cistron.nl/pub/people/miquels/sysvinit/
+
+build-dir			src
+
+super-install
+; There are no component paths, so we must use a trick:
+install-prefix-var	ROOT
+;system-prefix-var	ROOT
+
+install-tree
+	bin
+	sbin
+	usr/bin
+	usr/include
+	framework
+	manuals/man1
+	manuals/man5
+	manuals/man8
+install-vars
+	BIN_OWNER		system
+	BIN_GROUP		system
+;	There are no component paths, so we must use a trick:
+	MANDIR			/manuals
+;	MANDIR			/system/resources/sysvinit/2.86/manuals
+
+documentation
+	README COPYRIGHT
+	doc/*
+
+links
+;	Fix broken symlink:
+	../system-programs/killall5	programs/pidof
+	system-programs/init		/sbin/
+	system-programs/shutdown	/sbin/
+
+; There are no component paths, so we must use a trick:
+move-files
+	usr/bin/*		programs/
+	usr/include/	framework/headers
+delete-files
+	usr/
+;	UtilLinuxNG has a maintained one:
+	programs/wall
+	manuals/man1/wall.1
