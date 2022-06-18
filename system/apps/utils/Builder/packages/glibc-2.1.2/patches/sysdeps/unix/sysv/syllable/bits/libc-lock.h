@@ -20,13 +20,15 @@
 #ifndef _BITS_LIBC_LOCK_H
 #define _BITS_LIBC_LOCK_H 1
 
+
+#ifdef _LIBC
+
 #include <atheos/semaphore.h>
 #include <atheos/atomic.h>
 #include <errno.h>
 #include <sys/debug.h>
 
 
-#define MUTEX_INITIALIZER { -1, 0, 0 }
 
 typedef struct __libc_lock__ __libc_lock_t;
 
@@ -36,6 +38,11 @@ struct __libc_lock__
     atomic_t	 nLock;
     atomic_t	 nIsInited;
 };
+
+
+#endif
+
+#define MUTEX_INITIALIZER { -1, 0, 0 }
 
 
 void	__libc_lock_atfork( void );
