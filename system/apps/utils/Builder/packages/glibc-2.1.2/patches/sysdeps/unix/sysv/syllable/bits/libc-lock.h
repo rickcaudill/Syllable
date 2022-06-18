@@ -21,7 +21,7 @@
 #define _BITS_LIBC_LOCK_H 1
 
 
-#ifdef _LIBC
+#ifndef _LIBC
 
 #include <atheos/semaphore.h>
 #include <atheos/atomic.h>
