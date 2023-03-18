@@ -4,32 +4,40 @@ OBJDIR = objs
 
 EXES = $(OBJDIR)/init $(OBJDIR)/ps $(OBJDIR)/ls_ports $(OBJDIR)/ls_sema	\
 	$(OBJDIR)/top $(OBJDIR)/nice $(OBJDIR)/semctl $(OBJDIR)/shutdown \
-	$(OBJDIR)/strace $(OBJDIR)/sysinfo $(OBJDIR)/unbuffer mkhome kill_all
+	$(OBJDIR)/strace $(OBJDIR)/sysinfo $(OBJDIR)/unbuffer mkhome kill_all \
+	$(OBJDIR)/open $(OBJDIR)/cbcopy $(OBJDIR)/cbpaste
 
-init_OBJS     = init.o
-ps_OBJS       = ps.o
-ls_ports_OBJS = ls_ports.o
-ls_sema_OBJS  = ls_sema.o
-top_OBJS      = top.o
-nice_OBJS     = nice.o
-semctl_OBJS   = semctl.o
-shutdown_OBJS = shutdown.o
-strace_OBJS   = strace.o
-sysinfo_OBJS  = sysinfo.o
-unbuffer_OBJS = unbuffer.o
+init_OBJS		= init.o
+ps_OBJS			= ps.o
+ls_ports_OBJS	= ls_ports.o
+ls_sema_OBJS	= ls_sema.o
+top_OBJS		= top.o
+nice_OBJS		= nice.o
+semctl_OBJS		= semctl.o
+shutdown_OBJS	= shutdown.o
+strace_OBJS		= strace.o
+sysinfo_OBJS	= sysinfo.o
+unbuffer_OBJS	= unbuffer.o
+open_OBJS		= open.o
+cbcopy_OBJS		= cbcopy.o
+cbpaste_OBJS	= cbpaste.o
 
-init_OBJS	:= $(addprefix $(OBJDIR)/,$(init_OBJS))
-ps_OBJS		:= $(addprefix $(OBJDIR)/,$(ps_OBJS))
+
+init_OBJS		:= $(addprefix $(OBJDIR)/,$(init_OBJS))
+ps_OBJS			:= $(addprefix $(OBJDIR)/,$(ps_OBJS))
 ls_ports_OBJS	:= $(addprefix $(OBJDIR)/,$(ls_ports_OBJS))
 ls_sema_OBJS	:= $(addprefix $(OBJDIR)/,$(ls_sema_OBJS))
-top_OBJS	:= $(addprefix $(OBJDIR)/,$(top_OBJS))
-reboot_OBJS	:= $(addprefix $(OBJDIR)/,$(reboot_OBJS))
-nice_OBJS	:= $(addprefix $(OBJDIR)/,$(nice_OBJS))
-semctl_OBJS	:= $(addprefix $(OBJDIR)/,$(semctl_OBJS))
+top_OBJS		:= $(addprefix $(OBJDIR)/,$(top_OBJS))
+reboot_OBJS		:= $(addprefix $(OBJDIR)/,$(reboot_OBJS))
+nice_OBJS		:= $(addprefix $(OBJDIR)/,$(nice_OBJS))
+semctl_OBJS		:= $(addprefix $(OBJDIR)/,$(semctl_OBJS))
 shutdown_OBJS	:= $(addprefix $(OBJDIR)/,$(shutdown_OBJS))
-strace_OBJS	:= $(addprefix $(OBJDIR)/,$(strace_OBJS))
+strace_OBJS		:= $(addprefix $(OBJDIR)/,$(strace_OBJS))
 sysinfo_OBJS	:= $(addprefix $(OBJDIR)/,$(sysinfo_OBJS))
 unbuffer_OBJS	:= $(addprefix $(OBJDIR)/,$(unbuffer_OBJS))
+open_OBJS		:= $(addprefix $(OBJDIR)/,$(open_OBJS))
+cbcopy_OBJS		:= $(addprefix $(OBJDIR)/,$(cbcopy_OBJS))
+cbpaste_OBJS	:= $(addprefix $(OBJDIR)/,$(cbpaste_OBJS))
 
 include $(ATHEOS_SRC)/makefile.rules
 
@@ -37,7 +45,6 @@ all:  $(OBJDIR) $(EXES)
 
 $(OBJDIR):
 	-mkdir $(OBJDIR)
-
 
 $(OBJDIR)/init: $(init_OBJS)
 	$(CC) $(init_OBJS) -o $@
@@ -61,7 +68,12 @@ $(OBJDIR)/strace: $(strace_OBJS)
 	$(CC) $(strace_OBJS) -o $@
 $(OBJDIR)/unbuffer: $(unbuffer_OBJS)
 	$(CC) $(unbuffer_OBJS) -lutil -o $@
-
+$(OBJDIR)/open: $(open_OBJS)
+	$(CXX) $(open_OBJS) -lsyllable -o $@
+$(OBJDIR)/cbcopy: $(cbcopy_OBJS)
+	$(CXX) $(cbcopy_OBJS) -lsyllable -o $@
+$(OBJDIR)/cbpaste: $(cbpaste_OBJS)
+	$(CXX) $(cbpaste_OBJS) -lsyllable -o $@
 deps:
 
 install:
