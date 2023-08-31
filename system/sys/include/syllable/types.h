@@ -31,10 +31,13 @@
 # include <stdbool.h>
 #endif
 
+#ifdef __SYLLABLE__
 /* XXXKV: I want to get rid of this */
-#ifndef __KERNEL__
-# include <syllable/pthreadtypes.h>
+  #ifndef __KERNEL__
+    #include <syllable/pthreadtypes.h>
+  #endif
 #endif
+
 
 #endif	/* __F_ATHEOS_TYPES_H__ */
 
