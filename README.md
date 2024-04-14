@@ -23,3 +23,6 @@ alias syllable-rsync='(){ echo $1; rsync -acvzh $2 $1 --recursive --cvs-exclude 
 
 
 ```
+
+UTM looks like:
+![qemu.png](qemu.png)
