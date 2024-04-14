@@ -26,3 +26,10 @@ alias syllable-rsync='(){ echo $1; rsync -acvzh $2 $1 --recursive --cvs-exclude 
 
 UTM looks like:
 ![qemu.png](qemu.png)
+
+
+How can I see Syllable logs in QEMU window?
+---
+
+You can change: ***/system/bin/dbterm 8 >> /var/log/kernel &*** to ***/system/bin/dbterm 1 >> /var/log/kernel &*** in /system/init.sh of your Syllable machine
+
