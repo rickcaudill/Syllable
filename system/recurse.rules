@@ -44,6 +44,12 @@ dist:
 		if ! $(MAKE) -C $(PWD)/$$subdir dist; then exit 1; fi;\
 	done
 
+tests:
+	@for subdir in $(SUBDIRS); do\
+		PWD=$(PWD)/$$subdir;\
+		if ! $(MAKE) -C $(PWD)/$$subdir tests; then echo ""; fi;\
+	done
+
 distclean:
 	@for subdir in $(SUBDIRS); do\
 		PWD=$(PWD)/$$subdir;\
