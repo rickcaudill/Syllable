@@ -1,8 +1,12 @@
+#include <translation/translator_factory.h>
 #include <translation/translator.h>
+#include <translation/bitmap.h>
+
 #include <gui/view.h>
 #include <util/exceptions.h>
 #include <gui/image.h>
 #include <assert.h>
+#include <util/resources.h>
 
 #define CLAMP255( x )	( x > 255 ? 255 : x )
 
@@ -231,9 +235,6 @@ BitmapImage::BitmapImage( const BitmapImage & cSource, uint32 nFlags )
  *		stream of data. The Translator API is used to try to recognize
  *		the format and load it as bitmap data.
  *		If you need to explicitly specify the file format, use Load().
- *		The StreamableIO is used only for loading the data. In particular,
- *		the BitmapImage does not delete it, so the caller is responsible for
- *		closing and deleting pcSource as necessary.
  *  \param	nFlags Bitmap flags, see os::Bitmap.
  *
  *  \sa Load(), os::Bitmap
@@ -299,9 +300,6 @@ bool BitmapImage::IsValid( void ) const
  *		a resource or any data source that can be represented as a
  *		stream of data. The Translator API is used to try to recognize
  *		the format and load it as bitmap data.
- *		The StreamableIO is used only for loading the data. In particular,
- *		the BitmapImage does not delete it, so the caller is responsible for
- *		closing and deleting pcSource as necessary.
  * \param	cType Used to specify a specific file format, if the automatic
  *		recognition is not enough.
  * \par		Example:
@@ -328,7 +326,7 @@ status_t BitmapImage::Load( StreamableIO * pcSource, const String & cType )
 		int x = 0;
 		int y = 0;
 
-		BitmapFrameHeader frameHeader;
+		TranslatorBitmap::BitmapFrameHeader frameHeader;
 
 		for( ;; )
 		{
@@ -339,7 +337,7 @@ status_t BitmapImage::Load( StreamableIO * pcSource, const String & cType )
 
 			if( trans == NULL )
 			{
-				int error = factory->FindTranslator( "", TRANSLATOR_TYPE_IMAGE, buffer, bytesRead, &trans );
+				int error = factory->FindTranslator( "",TRANSLATOR_TYPE_IMAGE, buffer, bytesRead, &trans );
 
 				if( error < 0 )
 					return false;
@@ -351,7 +349,7 @@ status_t BitmapImage::Load( StreamableIO * pcSource, const String & cType )
 			{
 				if( m->m_pcBitmap == NULL )
 				{
-					BitmapHeader BmHeader;
+					TranslatorBitmap::BitmapHeader BmHeader;
 
 					if( trans->Read( &BmHeader, sizeof( BmHeader ) ) != sizeof( BmHeader ) )
 						break;
@@ -454,7 +452,7 @@ status_t BitmapImage::Save( StreamableIO * pcDest, const String & cType )
 
 		//      printf("Found translator\n");
 
-		BitmapHeader cBmHeader;
+		TranslatorBitmap::BitmapHeader cBmHeader;
 
 		cBmHeader.bh_header_size = sizeof( cBmHeader );
 		cBmHeader.bh_data_size = ( int )( GetSize().x * GetSize(  ).y ) * 4;
@@ -469,7 +467,7 @@ status_t BitmapImage::Save( StreamableIO * pcDest, const String & cType )
 
 		trans->AddData( &cBmHeader, sizeof( cBmHeader ), 0 );
 
-		BitmapFrameHeader cFrameHeader;
+		TranslatorBitmap::BitmapFrameHeader cFrameHeader;
 
 		cFrameHeader.bf_header_size = sizeof( cFrameHeader );
 		cFrameHeader.bf_data_size = ( int )( GetSize().x * GetSize(  ).y ) * 4;
@@ -1090,6 +1088,21 @@ BitmapImage & BitmapImage::operator=( const BitmapImage & cSource )
 	if( source == NULL ) return *this;    /* Source does not have SHARE_FRAMEBUFFER flag; can't access the raster data */
 	SetBitmapData( source, IPoint( ( int )cSource.GetSize().x, ( int )cSource.GetSize(  ).y ), cSource.GetColorSpace(  ), m->m_nBitmapFlags );
 	return *this;
+}
+
+
+os::BitmapImage* BitmapImage::GetImageFromResource(const os::String& cName)
+{
+	os::BitmapImage * pcImage = new os::BitmapImage();
+	
+	os::Resources cRes(0);
+	os::ResStream * pcStream = cRes.GetResourceStream( cName.c_str() );
+	if( pcStream == NULL )
+	{
+		throw( os::errno_exception("invalid stream") );
+	}
+	pcImage->Load( pcStream );
+	return pcImage;
 }
 
 // ----------------------------------------------------------------------------

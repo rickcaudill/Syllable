@@ -4,7 +4,14 @@
 #include <atheos/kdebug.h>
 
 #include <util/circularbuffer.h>
+
+
 #include <translation/translator.h>
+#include <translation/translator_info.h>
+#include <translation/bitmap.h>
+#include <translation/translator_node.h>
+#include <translation/translator_factory.h>
+
 
 #include <vector>
 #include <new>
@@ -38,8 +45,8 @@ private:
     void AddLine( ColorMapObject* ColorMap, int y, GifPixelType* pLine );
 
     
-    BitmapHeader       m_sBitmapHeader;
-    BitmapFrameHeader  m_sCurrentFrame;
+    TranslatorBitmap::BitmapHeader       m_sBitmapHeader;
+    TranslatorBitmap::BitmapFrameHeader  m_sCurrentFrame;
     CircularBuffer     m_cOutBuffer;
     CircularBuffer     m_cInBuffer;
     int		       m_nNumLoadedLines;
@@ -269,7 +276,7 @@ ssize_t GIFTrans::Read( void* pData, size_t nLen )
 	return( 0 );
     }
     if (  m_bTopHeaderRead == false ) {
-	if ( nLen < sizeof( BitmapHeader ) ) {
+	if ( nLen < sizeof( TranslatorBitmap::BitmapHeader ) ) {
 	    errno = EINVAL;
 	    return( -1 );
 	}
@@ -296,23 +303,37 @@ void GIFTrans::Reset()
 class GIFTransNode : public TranslatorNode
 {
 public:
-    virtual int Identify( const String& cSrcType, const String& cDstType, const void* pData, int nLen ) {
-	if ( nLen < 3 ) {
-	    return( TranslatorFactory::ERR_NOT_ENOUGH_DATA );
-	}
-	const uint8* p = (const uint8*)pData;
-	if( p[0] == 'G' && p[1] == 'I' && p[2] == 'F' ) {
-	    return( 0 );
-	}
-	return( TranslatorFactory::ERR_UNKNOWN_FORMAT );
+    virtual int Identify( const String& cSrcType, const String& cDstType, const void* pData, int nLen ) 
+    {
+		if ( nLen < 3 ) 
+		{
+	    	return( TranslatorFactory::ERR_NOT_ENOUGH_DATA );
+		}
+		
+		const uint8* p = (const uint8*)pData;
+	
+		if( p[0] == 'G' && p[1] == 'I' && p[2] == 'F' ) 
+		{
+	    	return( 0 );
+		}
+		
+		return( TranslatorFactory::ERR_UNKNOWN_FORMAT );
     }
     virtual TranslatorInfo GetTranslatorInfo()
     {
-	static TranslatorInfo sInfo = { "image/gif", TRANSLATOR_TYPE_IMAGE, 1.0f };
-	return( sInfo );
+		static TranslatorInfo sInfo;
+		sInfo.m_cAuthor = "Syllable team";
+		sInfo.m_cInfo = "A simple gif translator.  Does not do writing yet, but will in future";
+		sInfo.m_cDateCreated ="Kurt Skauen";
+		sInfo.m_cSourceType ="image/gif";
+		sInfo.m_cDestType = TRANSLATOR_TYPE_IMAGE;
+		sInfo.m_vQuality =  1.0f;
+		return( sInfo );
     }
-    virtual Translator*	   CreateTranslator() {
-	return( new GIFTrans );
+    
+    virtual Translator*	   CreateTranslator() 
+    {
+		return( new GIFTrans );
     }
 };
 
@@ -335,3 +356,5 @@ TranslatorNode* get_translator_node( int nIndex )
 }
     
 };
+
+

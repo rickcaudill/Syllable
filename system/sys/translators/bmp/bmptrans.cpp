@@ -103,7 +103,12 @@
 #include <stdio.h>
 #include <atheos/kdebug.h>
 #include <util/circularbuffer.h>
+
 #include <translation/translator.h>
+#include <translation/translator_info.h>
+#include <translation/translator_factory.h>
+#include <translation/bitmap.h>
+
 #include <storage/memfile.h>
 
 #include <vector>
@@ -199,8 +204,8 @@ private:
 	int32 _GetPadding( uint32 width, uint16 bitsperpixel );
 	void _Pixelcpy( uint8* dest, uint32 pixel, uint32 count );
 
-	BitmapHeader		m_sBitmapHeader;
-    BitmapFrameHeader	m_sCurrentFrame;
+	TranslatorBitmap::BitmapHeader		m_sBitmapHeader;
+    TranslatorBitmap::BitmapFrameHeader	m_sCurrentFrame;
 
 	CircularBuffer		m_cOutBuffer;
 	CircularBuffer		m_cInBuffer;
@@ -917,10 +922,10 @@ dbprintf( "**********Image size %d %d Bitperpixel %d Compression %d\n", msheader
 		if( m_cInBuffer.Read( tmp, nskip ) != nskip )
 		{
 			dbprintf( "Unable to skip %d bytes\n", nskip );
-			delete[] tmp;
+			delete tmp;
 			return ERR_INVALID_DATA;
 		}
-		delete[] tmp;
+		delete tmp;
 	}
 
 	// Temporary place to store image
@@ -951,7 +956,7 @@ dbprintf( "**********Image size %d %d Bitperpixel %d Compression %d\n", msheader
 			// Unsupported
 			else
 			{
-				delete[] image;
+				delete image;
 				dbprintf( "Unsupported 8 BPP format\n" );
 				return ERR_INVALID_DATA;
 			}
@@ -968,7 +973,7 @@ dbprintf( "**********Image size %d %d Bitperpixel %d Compression %d\n", msheader
             // Unsupported
 			else
 			{
-				delete[] image;
+				delete image;
 				dbprintf( "Unsupported 4 BPP format\n" );
 				return ERR_INVALID_DATA;
 			}  
@@ -979,7 +984,7 @@ dbprintf( "**********Image size %d %d Bitperpixel %d Compression %d\n", msheader
                        
 		default:
 		{
-			delete[] image;
+			delete image;
 			dbprintf( "Unsupported bits per pixel format\n" );
 			return ERR_INVALID_DATA;
 		
@@ -988,7 +993,7 @@ dbprintf( "**********Image size %d %d Bitperpixel %d Compression %d\n", msheader
 
 	if( ret != ERR_OK )
 	{
-		delete[] image;
+		delete image;
 		return ret;
 	}
 
@@ -999,7 +1004,7 @@ dbprintf( "**********Image size %d %d Bitperpixel %d Compression %d\n", msheader
 		m_cOutBuffer.Write( tmp, m_sCurrentFrame.bf_bytes_per_row );
 
 	// Clean up
-	delete[] image;
+	delete image;
 
 	// Wow, we have sucessfully parsed a BMP!
 	return ERR_OK;
@@ -1101,7 +1106,14 @@ public:
 
     virtual TranslatorInfo GetTranslatorInfo()
     {
-		static TranslatorInfo sInfo = { "image/bmp", TRANSLATOR_TYPE_IMAGE, 1.0f };
+		static TranslatorInfo sInfo;
+		sInfo.m_cSourceType = "image/bmp";
+		sInfo.m_cDestType = TRANSLATOR_TYPE_IMAGE;
+		sInfo.m_vQuality = 1.0f;
+		sInfo.m_cInfo = "A simple bitmap translator";
+		sInfo.m_cAuthor = "Jonas Jarvoll";
+		sInfo.m_cDateCreated = "2008";
+		
 		return( sInfo );
     }
 
@@ -1127,4 +1139,5 @@ extern "C" TranslatorNode* get_translator_node( int nIndex )
     static BMPTransNode sNode;
     return( &sNode );
 }
+
 

@@ -192,6 +192,9 @@ public:
     status_t		AlphaToOverlay( uint32 cTransparentColor );
     status_t		GlowFilter( Color32_s cInnerColor, Color32_s cOuterColor, int nRadius );
     status_t		ColorizeFilter( Color32_s cColor );
+    
+    
+    static os::BitmapImage* GetImageFromResource(const os::String& cName);
 private:
     class Private;
     Private *m;
@@ -220,3 +223,5 @@ class GlowFilter : public Message {
 }
 
 #endif // __F_GUI_IMAGE_H__
+
+

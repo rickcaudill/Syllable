@@ -2,9 +2,13 @@
 #include <setjmp.h>
 
 #include <atheos/kdebug.h>
-
 #include <util/circularbuffer.h>
+
 #include <translation/translator.h>
+#include <translation/translator_info.h>
+#include <translation/translator_factory.h>
+#include <translation/bitmap.h>
+
 
 #include <vector>
 
@@ -130,8 +134,8 @@ public:
     virtual void     Abort();
     virtual void     Reset();
 private:
-    BitmapHeader       m_sBitmapHeader;
-    BitmapFrameHeader  m_sCurrentFrame;
+    TranslatorBitmap::BitmapHeader       m_sBitmapHeader;
+    TranslatorBitmap::BitmapFrameHeader  m_sCurrentFrame;
     CircularBuffer     m_cOutBuffer;
     bool	       m_bTopHeaderValid;
     bool	       m_bTopHeaderRead;
@@ -348,7 +352,7 @@ ssize_t JPEGTrans::Read( void* pData, size_t nLen )
 	return( ERR_SUSPENDED );
     }
     if (  m_bTopHeaderRead == false ) {
-	if ( nLen < sizeof( BitmapHeader ) ) {
+	if ( nLen < sizeof( TranslatorBitmap::BitmapHeader ) ) {
 	    errno = EINVAL;
 	    return( -1 );
 	}
@@ -378,23 +382,36 @@ void JPEGTrans::Reset()
 class JPEGTransNode : public TranslatorNode
 {
 public:
-    virtual int Identify( const String& cSrcType, const String& cDstType, const void* pData, int nLen ) {
-	if ( nLen < 3 ) {
-	    return( TranslatorFactory::ERR_NOT_ENOUGH_DATA );
-	}
-	const uint8* p = (uint8*)pData;
-	if( p[0] == 0377 && p[1] == 0330 && p[2] == 0377 ) {
-	    return( 0 );
-	}
-	return( TranslatorFactory::ERR_UNKNOWN_FORMAT );
+    virtual int Identify( const String& cSrcType, const String& cDstType, const void* pData, int nLen ) 
+    {
+		if ( nLen < 3 ) 
+		{
+	    	return( TranslatorFactory::ERR_NOT_ENOUGH_DATA );
+		}
+	
+		const uint8* p = (uint8*)pData;
+		if( p[0] == 0377 && p[1] == 0330 && p[2] == 0377 ) 
+		{
+	    	return( 0 );
+		}
+		return( TranslatorFactory::ERR_UNKNOWN_FORMAT );
     }
+    
     virtual TranslatorInfo GetTranslatorInfo()
     {
-	static TranslatorInfo sInfo = { "image/jpeg", TRANSLATOR_TYPE_IMAGE, 1.0f };
-	return( sInfo );
+		static TranslatorInfo sInfo;
+		sInfo.m_cInfo = "Simple JPEG translator";
+		sInfo.m_cDateCreated = "1999";
+		sInfo.m_cAuthor = "Kurt Skauen";
+		sInfo.m_cSourceType = "image/jpeg";
+		sInfo.m_cDestType = TRANSLATOR_TYPE_IMAGE;
+		sInfo.m_vQuality = 1.0f;
+		return( sInfo );
     }
-    virtual Translator*	   CreateTranslator() {
-	return( new JPEGTrans );
+    
+    virtual Translator*	   CreateTranslator() 
+    {
+		return( new JPEGTrans );
     }
 };
 
@@ -417,3 +434,4 @@ TranslatorNode* get_translator_node( int nIndex )
 }
     
 };
+

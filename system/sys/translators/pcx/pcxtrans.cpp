@@ -55,6 +55,10 @@
 #include <atheos/kdebug.h>
 #include <util/circularbuffer.h>
 #include <translation/translator.h>
+#include <translation/translator_info.h>
+#include <translation/bitmap.h>
+#include <translation/translator_node.h>
+#include <translation/translator_factory.h>
 
 using namespace os;
 
@@ -144,8 +148,8 @@ private:
 	uint16 _ConvertTo16bit( uint8* src );
 	int16 _ConvertTo16bitSigned( uint8* src );
 
-	BitmapHeader		m_sBitmapHeader;
-    BitmapFrameHeader	m_sCurrentFrame;
+	TranslatorBitmap::BitmapHeader		m_sBitmapHeader;
+    TranslatorBitmap::BitmapFrameHeader	m_sCurrentFrame;
 
 	CircularBuffer		m_cOutBuffer;
 	CircularBuffer		m_cInBuffer;
@@ -429,7 +433,7 @@ dbprintf( "*** Read 8 BPP image.\n" );
 		}
 	}
 
-	delete[] tmp_image;
+	delete tmp_image;
 
 	return ret;
 }
@@ -789,7 +793,13 @@ public:
 
     virtual TranslatorInfo GetTranslatorInfo()
     {
-		static TranslatorInfo sInfo = { "image/x-pcx", TRANSLATOR_TYPE_IMAGE, 1.0f };
+		static TranslatorInfo sInfo;
+		sInfo.m_cInfo = "A pcx translator";
+		sInfo.m_cAuthor = "Jonas Jarvoll";
+		sInfo.m_cDateCreated = "2007";
+		sInfo.m_cSourceType = "image/x-pcx";
+		sInfo.m_cDestType =  TRANSLATOR_TYPE_IMAGE;
+		sInfo.m_vQuality =  1.0f;
 		return( sInfo );
     }
 
@@ -828,4 +838,6 @@ extern "C" TranslatorNode* get_translator_node( int nIndex )
     static PCXTransNode sNode;
     return( &sNode );
 }
+
+
 

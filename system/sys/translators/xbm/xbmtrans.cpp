@@ -60,6 +60,10 @@
 #include <atheos/kdebug.h>
 #include <util/circularbuffer.h>
 #include <translation/translator.h>
+#include <translation/translator_info.h>
+#include <translation/bitmap.h>
+#include <translation/translator_node.h>
+#include <translation/translator_factory.h>
 #include <storage/memfile.h>
 
 using namespace os;
@@ -105,8 +109,8 @@ private:
 	void _WriteValue( char value, int bit_write );
 	int _ConvertToValue( char ch );
 
-	BitmapHeader		m_sBitmapHeader;
-    BitmapFrameHeader	m_sCurrentFrame;
+	TranslatorBitmap::BitmapHeader		m_sBitmapHeader;
+    TranslatorBitmap::BitmapFrameHeader	m_sCurrentFrame;
 
 	CircularBuffer		m_cOutBuffer;
 	MemFile				m_cInBuffer;
@@ -574,7 +578,13 @@ public:
 
     virtual TranslatorInfo GetTranslatorInfo()
     {
-		static TranslatorInfo sInfo = { "image/x-xbitmap", TRANSLATOR_TYPE_IMAGE, 1.0f };
+		static TranslatorInfo sInfo;
+		sInfo.m_cSourceType = "image/x-xbitmap";
+		sInfo.m_cDestType = TRANSLATOR_TYPE_IMAGE;
+		sInfo.m_vQuality =  1.0f;
+		sInfo.m_cInfo = "A simple x-bitmap translator";
+		sInfo.m_cAuthor = "Jonas Jarvoll";
+		sInfo.m_cDateCreated = "2007";
 		return( sInfo );
     }
 
@@ -600,4 +610,6 @@ extern "C" TranslatorNode* get_translator_node( int nIndex )
     static XBMTransNode sNode;
     return( &sNode );
 }
+
+
 

@@ -45,6 +45,10 @@
 #include <atheos/kdebug.h>
 #include <util/circularbuffer.h>
 #include <translation/translator.h>
+#include <translation/translator_info.h>
+#include <translation/bitmap.h>
+#include <translation/translator_node.h>
+#include <translation/translator_factory.h>
 #include <storage/memfile.h>
 
 extern "C" {
@@ -172,8 +176,8 @@ public:
 private:
 	status_t  _TranslateTIFF();
 
-	BitmapHeader		m_sBitmapHeader;
-    BitmapFrameHeader	m_sCurrentFrame;
+	TranslatorBitmap::BitmapHeader		m_sBitmapHeader;
+    TranslatorBitmap::BitmapFrameHeader	m_sCurrentFrame;
 
 	CircularBuffer		m_cOutBuffer;
 	MemFile				m_cInBuffer;
@@ -395,7 +399,13 @@ public:
 
     virtual TranslatorInfo GetTranslatorInfo()
     {
-		static TranslatorInfo sInfo = { "image/tiff", TRANSLATOR_TYPE_IMAGE, 1.0f };
+		static TranslatorInfo sInfo;
+		sInfo.m_cAuthor = "Jonas Jarvoll";
+		sInfo.m_cDateCreated = "2007";
+		sInfo.m_cInfo = "A simple tiff image translator";
+		sInfo.m_cSourceType = "image/tiff";
+		sInfo.m_cDestType = TRANSLATOR_TYPE_IMAGE;
+		sInfo.m_vQuality =  1.0f;
 		return( sInfo );
     }
 
@@ -421,4 +431,7 @@ extern "C" TranslatorNode* get_translator_node( int nIndex )
     static TIFFTransNode sNode;
     return( &sNode );
 }
+
+
+
 

@@ -4,7 +4,12 @@
 #include <atheos/kdebug.h>
 #include <gui/bitmap.h>		// BitsPerPixel()
 #include <util/circularbuffer.h>
+
 #include <translation/translator.h>
+#include <translation/translator_info.h>
+#include <translation/bitmap.h>
+#include <translation/translator_node.h>
+#include <translation/translator_factory.h>
 
 #include <vector>
 #include <new>
@@ -43,8 +48,8 @@ private:
     }
     bool AppendToRowBuffer( void );
 
-    BitmapHeader	m_sBitmapHeader;
-    BitmapFrameHeader	m_sCurrentFrame;
+    TranslatorBitmap::BitmapHeader	m_sBitmapHeader;
+    TranslatorBitmap::BitmapFrameHeader	m_sCurrentFrame;
     CircularBuffer  	m_cOutBuffer;
     CircularBuffer  	m_cInBuffer;		// Only for writing
     
@@ -375,12 +380,12 @@ status_t PNGTrans::AddData( const void* pData, size_t nLen, bool bFinal )
 	} else {
 		m_cInBuffer.Write( pData, nLen );
 	//	dbprintf("PNG-Write: Data added!\n");
-		if( m_eState == STATE_INIT && m_cInBuffer.Size() > (ssize_t)sizeof( BitmapHeader ) ) {
+		if( m_eState == STATE_INIT && m_cInBuffer.Size() > (ssize_t)sizeof( TranslatorBitmap::BitmapHeader ) ) {
 			m_cInBuffer.Read( &m_sBitmapHeader, sizeof( m_sBitmapHeader ) );
 			m_eState = STATE_FRAMEHDR;
 		}
 
-		if( m_eState == STATE_FRAMEHDR && m_cInBuffer.Size() > (ssize_t)sizeof( BitmapFrameHeader ) ) {
+		if( m_eState == STATE_FRAMEHDR && m_cInBuffer.Size() > (ssize_t)sizeof( TranslatorBitmap::BitmapFrameHeader ) ) {
 			m_cInBuffer.Read( &m_sCurrentFrame, sizeof( m_sCurrentFrame ) );
 			// TODO: Verify depth, convert if not RGB32
 			png_set_IHDR( m_psPNGStruct, m_psPNGInfo,
@@ -436,41 +441,66 @@ void PNGTrans::Reset()
 class PNGReaderNode : public TranslatorNode
 {
 public:
-    virtual int Identify( const String& cSrcType, const String& cDstType, const void* pData, int nLen ) {
-	if ( nLen < 4 ) {
-	    return( TranslatorFactory::ERR_NOT_ENOUGH_DATA );
-	}
-	if ( png_check_sig( (png_bytep)pData, nLen ) ) {
-	    return( 0 );
-	}
-	return( TranslatorFactory::ERR_UNKNOWN_FORMAT );
+    virtual int Identify( const String& cSrcType, const String& cDstType, const void* pData, int nLen ) 
+    {
+		if ( nLen < 4 ) 
+		{
+	    	return( TranslatorFactory::ERR_NOT_ENOUGH_DATA );
+		}
+	
+		if ( png_check_sig( (png_bytep)pData, nLen ) ) 
+		{
+	    	return( 0 );
+		}
+		return( TranslatorFactory::ERR_UNKNOWN_FORMAT );
     }
+    
+    
     virtual TranslatorInfo GetTranslatorInfo()
     {
-	static TranslatorInfo sInfo = { "image/png", TRANSLATOR_TYPE_IMAGE, 1.0f };
-	return( sInfo );
+		static TranslatorInfo sInfo;
+		sInfo.m_cInfo = "PNG image translator";
+		sInfo.m_cAuthor = "Kurt Skauen";
+		sInfo.m_cDateCreated = "1999";
+		sInfo.m_cDestType = TRANSLATOR_TYPE_IMAGE;
+		sInfo.m_cSourceType = "image/png";
+    	sInfo.m_vQuality = 1.0f;
+		return( sInfo );
     }
-    virtual Translator*	   CreateTranslator() {
-	return( new PNGTrans );
+    
+    virtual Translator*	   CreateTranslator() 
+    {
+		return( new PNGTrans );
     }
 };
 
 class PNGWriterNode : public TranslatorNode
 {
 public:
-    virtual int Identify( const String& cSrcType, const String& cDstType, const void* pData, int nLen ) {
-	if ( cSrcType == TRANSLATOR_TYPE_IMAGE && cDstType == "image/png" ) {
-	    return( 0 );
-	}
-	return( TranslatorFactory::ERR_UNKNOWN_FORMAT );
+    virtual int Identify( const String& cSrcType, const String& cDstType, const void* pData, int nLen ) 
+    {
+		if ( cSrcType == TRANSLATOR_TYPE_IMAGE && cDstType == "image/png" ) 
+		{
+	    	return( 0 );
+		}
+		return( TranslatorFactory::ERR_UNKNOWN_FORMAT );
     }
+    
     virtual TranslatorInfo GetTranslatorInfo()
     {
-	static TranslatorInfo sInfo = { TRANSLATOR_TYPE_IMAGE, "image/png", 1.0f };
-	return( sInfo );
+		static TranslatorInfo sInfo;
+		sInfo.m_cInfo = "PNG image translator";
+		sInfo.m_cAuthor = "Kurt Skauen";
+		sInfo.m_cDateCreated = "1999";
+		sInfo.m_cSourceType = TRANSLATOR_TYPE_IMAGE;
+		sInfo.m_cDestType = "image/png";
+    	sInfo.m_vQuality = 1.0f;
+		return( sInfo );
     }
-    virtual Translator*	   CreateTranslator() {
-	return( new PNGTrans( true ) );
+    
+    virtual Translator*	   CreateTranslator() 
+    {
+		return( new PNGTrans( true ) );
     }
 };
 
@@ -497,5 +527,6 @@ TranslatorNode* get_translator_node( int nIndex )
 }
     
 };
+
 
 

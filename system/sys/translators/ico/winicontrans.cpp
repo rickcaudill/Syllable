@@ -8,7 +8,14 @@
 #include <gui/bitmap.h>		// BitsPerPixel
 #include <util/circularbuffer.h>
 #include <storage/memfile.h>
+
+
 #include <translation/translator.h>
+#include <translation/translator_info.h>
+#include <translation/bitmap.h>
+#include <translation/translator_node.h>
+#include <translation/translator_factory.h>
+
 
 #include <vector>
 #include <new>
@@ -93,8 +100,8 @@ public:
 private:
     bool					m_bWriteMode;
     bool					m_bFirstFrame;
-    BitmapHeader			m_sBitmapHeader;
-    BitmapFrameHeader		m_sCurrentFrame;
+    TranslatorBitmap::BitmapHeader			m_sBitmapHeader;
+    TranslatorBitmap::BitmapFrameHeader		m_sCurrentFrame;
     CircularBuffer			m_cOutBuffer;
     CircularBuffer			m_cInBuffer;
     MemFile					m_cFile;
@@ -459,7 +466,13 @@ public:
     }
     virtual TranslatorInfo GetTranslatorInfo()
     {
-	static TranslatorInfo sInfo = { "image/windows-icon", TRANSLATOR_TYPE_IMAGE, 1.0f };
+	static TranslatorInfo sInfo;
+	sInfo.m_cInfo = "A simple windows icon translator";
+	sInfo.m_cAuthor = "Syllable team";
+	sInfo.m_cDateCreated="2006";
+	sInfo.m_cSourceType = "image/windows-icon";
+	sInfo.m_cDestType = TRANSLATOR_TYPE_IMAGE;
+	sInfo.m_vQuality =  1.0f;
 		return( sInfo );
 	}
 	virtual Translator*	   CreateTranslator() {
@@ -510,4 +523,6 @@ TranslatorNode* get_translator_node( int nIndex )
 }
     
 };
+
+
 

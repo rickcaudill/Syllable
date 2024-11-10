@@ -25,59 +25,16 @@
 
 #include <gui/rect.h>
 #include <gui/guidefines.h>
-
+#include <util/messenger.h>
+#include <util/message.h>
 #include <util/string.h>
-
-namespace os
-{
-#if 0
-}
-#endif
-
-class Messenger;
-class Message;
-
-enum
-{
-    BMF_MULTIPASS = 0x0001
-};
-
+#include <translation/datareceiver.h>
 
 static const char* TRANSLATOR_TYPE_IMAGE = "image/x-atheos_trans";
 
-struct BitmapHeader
+
+namespace os
 {
-    size_t	bh_header_size;
-    size_t	bh_data_size;
-    uint32	bh_flags;
-    IRect	bh_bounds;
-    int		bh_frame_count;
-    int		bh_bytes_per_row;
-    color_space bh_color_space;
-};
-
-struct BitmapFrameHeader
-{
-    size_t 	bf_header_size;
-    size_t 	bf_data_size;
-    uint32  	bf_time_stamp;
-    color_space bf_color_space;
-    int		bf_bytes_per_row;
-    IRect	bf_frame;
-};
-
-
-class DataReceiver
-{
-public:
-    DataReceiver();
-    virtual ~DataReceiver();
-
-    virtual void DataReady( void* pData, size_t nLen, bool bFinal ) = 0;
-private:
-    void* m;
-};
-
 class Translator
 {
 public:
@@ -97,6 +54,8 @@ public:
     virtual ssize_t  Read( void* pData, size_t nLen ) = 0;
     virtual void     Abort() = 0;
     virtual void     Reset() = 0;
+
+	static os::String GetExtensionPath();
 protected:
     virtual status_t DataAdded( void* pData, size_t nLen, bool bFinal );
     void Invoke( void* pData, size_t nSize, bool bFinal );
@@ -104,56 +63,12 @@ private:
     struct Internal;
 
     Internal* m;
-};
-
-struct TranslatorInfo
-{
-    String source_type;
-    String dest_type;
-    float	quality;
-};
-
-class TranslatorNode
-{
-public:
-    TranslatorNode();
-    virtual ~TranslatorNode();
-
-    virtual int Identify( const String& cSrcType, const String& cDstType, const void* pData, int nLen ) = 0;
-    virtual TranslatorInfo GetTranslatorInfo() = 0;
-    virtual Translator*	   CreateTranslator() = 0;
-private:
-    void* m;
-};
-
-
-
-class TranslatorFactory
-{
-public:
-    enum { ERR_NOT_ENOUGH_DATA = -1, ERR_UNKNOWN_FORMAT = -2, ERR_NO_MEM = -3 };
-public:
-    TranslatorFactory();
-    ~TranslatorFactory();
-
-    static TranslatorFactory* GetDefaultFactory();
-    
-    void LoadAll();
-
-    status_t FindTranslator( const String& cSrcType, const String& cDstType,
-			     const void* pData, size_t nLen, Translator** ppcTrans );
-
-    int             GetTranslatorCount();
-    TranslatorNode* GetTranslatorNode( int nIndex );
-    TranslatorInfo  GetTranslatorInfo( int nIndex );
-    Translator*     CreateTranslator( int nIndex );
-
-private:
-    struct Internal;
-    Internal* m;
-};
-
-    
+};   
 } // end of namespace
 
 #endif // __F_TRANSLATION_TRANSLATOR_H__
+
+
+
+
+

@@ -7,6 +7,10 @@
 #include <gui/bitmap.h>		// BitsPerPixel
 #include <util/circularbuffer.h>
 #include <translation/translator.h>
+#include <translation/translator_info.h>
+#include <translation/bitmap.h>
+#include <translation/translator_node.h>
+#include <translation/translator_factory.h>
 
 #include <vector>
 #include <new>
@@ -30,8 +34,8 @@ public:
 private:
     bool		m_bWriteMode;
     bool		m_bFirstFrame;
-    BitmapHeader	m_sBitmapHeader;
-    BitmapFrameHeader	m_sCurrentFrame;
+    TranslatorBitmap::BitmapHeader	m_sBitmapHeader;
+    TranslatorBitmap::BitmapFrameHeader	m_sCurrentFrame;
     CircularBuffer	m_cOutBuffer;
     CircularBuffer	m_cInBuffer;
     IconDir		m_sIconDir;
@@ -65,7 +69,7 @@ status_t IconTrans::AddData( const void* pData, size_t nLen, bool bFinal )
 		// Data in TRANSLATOR_TYPE_IMAGE format has been added, translate it to icon format
 
 		// Find a BitmapHeader structure:
-		if( m_eState == STATE_INIT && m_cInBuffer.Size() > (ssize_t)sizeof( BitmapHeader ) ) {
+		if( m_eState == STATE_INIT && m_cInBuffer.Size() > (ssize_t)sizeof( TranslatorBitmap::BitmapHeader ) ) {
 			m_cInBuffer.Read( &m_sBitmapHeader, sizeof( m_sBitmapHeader ) );
 			m_eState = STATE_FRAMEHDR;
 			m_sIconDir.nIconMagic = ICON_MAGIC;
@@ -77,7 +81,7 @@ status_t IconTrans::AddData( const void* pData, size_t nLen, bool bFinal )
 		do {
 			repeat = false;
 
-			if( m_eState == STATE_FRAMEHDR && m_cInBuffer.Size() > (ssize_t)sizeof( BitmapFrameHeader ) ) {
+			if( m_eState == STATE_FRAMEHDR && m_cInBuffer.Size() > (ssize_t)sizeof( TranslatorBitmap::BitmapFrameHeader ) ) {
 				m_cInBuffer.Read( &m_sCurrentFrame, sizeof( m_sCurrentFrame ) );
 				m_sIconHdr.nBitsPerPixel = BitsPerPixel( m_sCurrentFrame.bf_color_space );
 				m_sIconHdr.nWidth = m_sCurrentFrame.bf_frame.right - m_sCurrentFrame.bf_frame.left + 1;
@@ -208,8 +212,14 @@ public:
     }
     virtual TranslatorInfo GetTranslatorInfo()
     {
-	static TranslatorInfo sInfo = { "image/atheos-icon", TRANSLATOR_TYPE_IMAGE, 1.0f };
-	return( sInfo );
+		static TranslatorInfo sInfo;
+		sInfo.m_cInfo="A simple icon translator";
+		sInfo.m_cDateCreated="1999";
+		sInfo.m_cAuthor="Kurt Skauen";
+		sInfo.m_cSourceType = "image/atheos-icon";
+		sInfo.m_cDestType =  TRANSLATOR_TYPE_IMAGE;
+		sInfo.m_vQuality =  1.0f;
+		return( sInfo );
     }
     virtual Translator*	   CreateTranslator() {
 	return( new IconTrans );
@@ -227,8 +237,13 @@ public:
     }
     virtual TranslatorInfo GetTranslatorInfo()
     {
-	static TranslatorInfo sInfo = { TRANSLATOR_TYPE_IMAGE, "image/atheos-icon", 1.0f };
-	return( sInfo );
+    	static TranslatorInfo sInfo;
+		sInfo.m_cInfo="A simple icon translator";
+		sInfo.m_cDateCreated="1999";
+		sInfo.m_cAuthor="Kurt Skauen";
+		sInfo.m_cDestType = "image/atheos-icon";
+		sInfo.m_cSourceType =  TRANSLATOR_TYPE_IMAGE;
+		sInfo.m_vQuality =  1.0f;
     }
     virtual Translator*	   CreateTranslator() {
 	return( new IconTrans( true ) );
@@ -258,3 +273,5 @@ TranslatorNode* get_translator_node( int nIndex )
 }
     
 };
+
+

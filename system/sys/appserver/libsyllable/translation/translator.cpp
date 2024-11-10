@@ -24,6 +24,9 @@
 #include <memory.h>
 
 #include <translation/translator.h>
+#include <translation/translator_factory.h>
+#include <translation/translator_info.h>
+
 #include <util/message.h>
 #include <util/messenger.h>
 #include <storage/directory.h>
@@ -40,7 +43,7 @@ static TranslatorFactory *g_pcDefaultFactory = NULL;
 struct Plugin
 {
 	int m_nLibrary;
-	  std::vector < TranslatorNode * >m_cNodes;
+	std::vector < TranslatorNode * >m_cNodes;
 };
 
 struct TranslatorFactory::Internal
@@ -66,7 +69,7 @@ void TranslatorFactory::LoadAll()
 {
 	try
 	{
-		Directory cDir( "/system/extensions/translators" );
+		Directory cDir( Translator::GetExtensionPath());
 
 		String cName;
 
@@ -76,7 +79,7 @@ void TranslatorFactory::LoadAll()
 			{
 				continue;
 			}
-			String cPath( "/system/extensions/translators/" );
+			String cPath  = Translator::GetExtensionPath() + os::String("/");
 
 			cPath += cName;
 
@@ -146,7 +149,7 @@ status_t TranslatorFactory::FindTranslator( const String &cSrcType, const String
 		TranslatorNode *pcNode = m->m_cNodes[i];
 		TranslatorInfo sInfo = pcNode->GetTranslatorInfo();
 
-		if( !( sInfo.dest_type == cDstType ) )
+		if( !( sInfo.m_cDestType == cDstType ) )
 		{
 			continue;
 		}
@@ -155,9 +158,9 @@ status_t TranslatorFactory::FindTranslator( const String &cSrcType, const String
 
 		if( nResult == 0 )
 		{
-			if( sInfo.quality > vBestQuality )
+			if( sInfo.m_vQuality > vBestQuality )
 			{
-				vBestQuality = sInfo.quality;
+				vBestQuality = sInfo.m_vQuality;
 				pcBestTrans = pcNode;
 			}
 		}
@@ -202,8 +205,6 @@ Translator *TranslatorFactory::CreateTranslator( int nIndex )
 }
 
 
-
-
 TranslatorFactory *TranslatorFactory::GetDefaultFactory()
 {
 	if( g_pcDefaultFactory == NULL )
@@ -213,20 +214,6 @@ TranslatorFactory *TranslatorFactory::GetDefaultFactory()
 	}
 	return ( g_pcDefaultFactory );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 struct Translator::Internal
 {
@@ -255,7 +242,6 @@ struct Translator::Internal
 	DataReceiver *m_pcDataTarget;
 	bool m_bSendData;
 
-//    std::vector<uint8> m_cBuffer;
 	uint8 *m_pnBuffer;
 	uint32 m_nBufSize;
 };
@@ -291,16 +277,10 @@ void Translator::SetTarget( DataReceiver * pcTarget )
 
 status_t Translator::AddData( const void *pData, size_t nLen, bool bFinal )
 {
-//    size_t nOldSize = m->m_cBuffer.size();
 	size_t nOldSize = m->m_nBufSize;
-
 	m->ResizeBuffer( nOldSize + nLen );
-//    m->m_cBuffer.resize( nOldSize + nLen );
-//    memcpy( (void*)(m->m_cBuffer.begin() + nOldSize), pData, nLen );
 	memcpy( m->m_pnBuffer + nOldSize, pData, nLen );
-
 	return ( DataAdded( m->m_pnBuffer, m->m_nBufSize, bFinal ) );
-//    return( DataAdded( m->m_cBuffer.c_str(), m->m_cBuffer.size(), bFinal ) );
 }
 
 status_t Translator::DataAdded( void *pData, size_t nLen, bool bFinal )
@@ -329,6 +309,11 @@ void Translator::Invoke( void *pData, size_t nSize, bool bFinal )
 	}
 }
 
+os::String Translator::GetExtensionPath()
+{
+	return "/system/extensions/translators";
+}
+
 
 TranslatorNode::TranslatorNode()
 {
@@ -338,4 +323,3 @@ TranslatorNode::TranslatorNode()
 TranslatorNode::~TranslatorNode()
 {
 }
-
