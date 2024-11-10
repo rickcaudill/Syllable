@@ -6,9 +6,9 @@ CATALOGS = da de es fr hu nl pl pt-br ru sv
 
 LIBBIN = /system/libraries
 
-LIBNAME = libsyllable.so.7
+LIBNAME = libsyllable.so.8
 
-VPATH = ./ gui storage util translation gui/colorselector gui/fontrequester
+VPATH = ./ gui storage util translation gui/colorselector gui/fontrequester graphics
 
 OBJS	= rect.o region.o desktop.o bitmap.o view.o tabview.o			\
 	  window.o slider.o scrollbar.o spinner.o frameview.o			\
@@ -23,13 +23,17 @@ OBJS += colorselector.o colorview.o colorwheel.o gradientview.o
 OBJS += fontrequester.o fontrequesterview.o
 OBJS += colorrequester.o
 
+
+OBJS += gfont.o transform.o colour.o penstyle.o fillstyle.o shape.o textlayout.o graphics_base.o graphics_view.o graphics_backend.o \
+		graphics_image.o graphics_ps.o
+
 OBJS += appserverconfig.o looper.o handler.o application.o message.o messenger.o messagequeue.o	\
 	invoker.o clipboard.o string.o regexp.o variant.o circularbuffer.o	\
 	resources.o optionparser.o settings.o thread.o messagefilter.o event.o
 OBJS += filereference.o filereference_info.o filereference_rename.o operation_copy.o operation_move.o operation_delete.o fsnode.o streamableio.o \
 	seekableio.o file.o tempfile.o directory.o directory_create.o symlink.o nodemonitor.o path.o memfile.o registrar.o volumes.o \
 	datetime.o shortcutkey.o catalog.o keymap.o \
-	locale.o attribute.o
+	locale.o
 OBJS += translator.o
 OBJS += vstubs.o
 
@@ -43,7 +47,7 @@ $(OBJDIR):
 	mkdir $(OBJDIR)
 
 $(OBJDIR)/$(LIBNAME): $(OBJS)
-	$(CXX) -shared -Xlinker "-soname=$(LIBNAME)" $(OBJS) -lm -o $(OBJDIR)/$(LIBNAME)
+	$(CXX) -shared -Xlinker "-soname=$(LIBNAME)" $(OBJS) -lm -lcairo -lfontconfig $(shell freetype-config --libs) -lxml2 -lz -lpthread -lm -lpangocairo-1.0 -lpangoft2-1.0 -lpango-1.0 -ldl -lgobject-2.0 -lgmodule-2.0 -lglib-2.0 -o $(OBJDIR)/$(LIBNAME)
 
 catalogs: catalogs/libsyllable.h
 

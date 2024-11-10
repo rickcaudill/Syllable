@@ -768,7 +768,7 @@ void SrvWindow::R_Render( WR_Render_s * psPkt )
 				uint8 *pBuffer = new uint8[nSize];
 				cClipData.Flatten( pBuffer, nSize );
 
-				SrvClipboard::SetData( psMsg->m_zName, pBuffer, 0, nSize, nSize );
+				SrvClipboard::SetData( psMsg->m_zName, pBuffer, nSize );
 				delete[] pBuffer;
 
 				break;
@@ -996,6 +996,10 @@ void SrvWindow::R_Render( WR_Render_s * psPkt )
 				bViewsMoved = true;
 				break;
 			}
+			default:
+				// Check if the view wants to handle this command
+				pcView->m_pcGraphicsCairo->DispatchCommand( psHdr );
+				break;
 		}
 		
 		/* Mark the layer for redrawing if we use backbuffered rendering */

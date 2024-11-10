@@ -33,6 +33,7 @@
 #include <macros.h>
 #include <gui/desktop.h>
 #include <util/shortcutkey.h>
+#include <graphics/graphics.h>
 
 
 using namespace os;
@@ -103,6 +104,7 @@ class Window::Private
 		m_pcMenuBar = NULL;
 		m_bMenuOpen = false;
 		m_nMouseMoveRun = 1;
+		m_nNextTabOrder = 0;
 		m_pcDefaultButton = NULL;
 		m_pcDefaultWheelView = NULL;
 		m_bDidScrollRect = false;
@@ -117,6 +119,7 @@ class Window::Private
 	int m_nMouseMoveRun;
 	int32 m_nMouseTransition;
 	int m_hLayer;
+	int m_nNextTabOrder;
 	port_id m_hLayerPort;
 	port_id m_hReplyPort;	// We direct replies to us to this port
 
@@ -154,8 +157,8 @@ void Window::_Cleanup()
 		if( ( (*i).second.m_nFlags & SDF_DELETE ) && ( (*i).second.m_pcMessage ) ) {
 			delete (*i).second.m_pcMessage;
 		}
+		m->m_cShortcuts.erase(i);
 	}
-	m->m_cShortcuts.clear();
 	if( m->m_pcTopView != NULL )
 	{
 		Message cReq( AR_CLOSE_WINDOW );
@@ -1257,14 +1260,13 @@ View *Window::_GetPrevTabView( View * pcCurrent )
 		}
 		if( nOrder <= nFocusOrder )
 		{
-			/* If two views have the same order number, then we can order them arbitrarily - we do it easily by comparing the pointers. */
-			if( nOrder > nClosest || ( nOrder == nClosest && (uint)pcView > (uint)pcClosest) )
+			if( nFocusOrder - nOrder < nFocusOrder - nClosest )
 			{
 				pcClosest = pcView;
 				nClosest = nOrder;
 			}
 		}
-		if( nOrder > nHighestOrder || ( nOrder == nHighestOrder && (uint)pcView > (uint)pcHighestOrder ) )
+		if( nOrder > nHighestOrder )
 		{
 			nHighestOrder = nOrder;
 			pcHighestOrder = pcView;
@@ -1307,14 +1309,13 @@ View *Window::_GetNextTabView( View * pcCurrent )
 		if( nOrder >= nFocusOrder )
 		{
 //			dbprintf( "- %ld = nOrder (%ld) >= nFocusOrder (%ld)\n", x, nOrder, nFocusOrder );
-			/* If two views have the same order number, then we can order them arbitrarily - we do it easily by comparing the pointers. */
-			if( nOrder < nClosest || (nOrder == nClosest && (uint)pcView > (uint)pcClosest) )
+			if( nOrder - nFocusOrder < nClosest - nFocusOrder )
 			{
 				pcClosest = pcView;
 				nClosest = nOrder;
 			}
 		}
-		if( nOrder < nLowestOrder || ( nOrder == nLowestOrder && (uint)pcView > (uint)pcLowestOrder ) )
+		if( nOrder < nLowestOrder )
 		{
 //			dbprintf( "- %ld = nOrder (%ld) < nLowestOrder (%ld)\n", x, nOrder, nLowestOrder );
 			nLowestOrder = nOrder;
@@ -1505,7 +1506,7 @@ void Window::DispatchMessage( Message * pcMsg, Handler * pcHandler )
 				}
 
 				View *pcFocusChild = GetFocusChild();
-				
+
 				if( pcFocusChild != NULL )
 				{
 					if( m->m_pcDefaultButton != NULL && pzString[0] == VK_ENTER && pzString[1] == '\0' )
@@ -1600,8 +1601,16 @@ void Window::DispatchMessage( Message * pcMsg, Handler * pcHandler )
 				{
 					pcView->_BeginUpdate();
 					pcView->_ConstrictRectangle( &cRect, Point( 0, 0 ) );
-					if( cRect.IsValid() )			
+					if( cRect.IsValid() )
+					{			
 						pcView->Paint( cRect );
+
+						graphics::GraphicsView* pcGraphics = new graphics::GraphicsView( pcView );
+						pcGraphics->BeginUpdate();
+						pcView->Paint( *pcGraphics, cRect );
+						pcGraphics->EndUpdate();
+						delete pcGraphics;
+					}
 					pcView->_EndUpdate();
 					if( m->m_bDidScrollRect )
 					{
@@ -1944,6 +1953,12 @@ void Window::__WI_reserved5__()
 void Window::__WI_reserved6__()
 {
 }
+
+
+
+
+
+
 
 
 

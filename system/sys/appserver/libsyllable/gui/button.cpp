@@ -34,6 +34,7 @@ using namespace os;
 class Button::Private {
 	public:
 	bool m_bClicked;
+	bool m_bMouseOver;
 	InputMode m_eInputMode;
 };
 
@@ -48,7 +49,7 @@ Button::Button( Rect cFrame, const String& cName, const String& cLabel, Message 
  : Control( cFrame, cName, cLabel, pcMessage, nResizeMask, nFlags )
 {
 	m = new Private;
-	m->m_bClicked = false;
+	m->m_bClicked = m->m_bMouseOver = false;
 	m->m_eInputMode = InputModeNormal;
 }
 
@@ -221,32 +222,45 @@ void Button::MouseUp( const Point & cPosition, uint32 nButton, Message * pcData 
 
 void Button::MouseMove( const Point & cPosition, int nCode, uint32 nButtons, Message * pcData )
 {
-	if( IsEnabled() == false )
+	if( IsEnabled())
 	{
-		View::MouseMove( cPosition, nCode, nButtons, pcData );
-		return;
-	}
 
-	if( m->m_bClicked && m->m_eInputMode == InputModeNormal )
-	{
-		uint32 nButtons;
-
-		GetMouse( NULL, &nButtons );
-
-		if( nButtons == 0 )
+		if( m->m_bClicked && m->m_eInputMode == InputModeNormal )
 		{
-			return;
+			uint32 nButtons;
+
+			GetMouse( NULL, &nButtons );
+
+			if( nButtons == 0 )
+			{
+				return;
+			}
+
+			if( nCode == MOUSE_OUTSIDE )
+			{
+				SetValue( false, false );
+			}
+			else
+			{
+				SetValue( true, false );
+			}
 		}
-
-		if( nCode == MOUSE_OUTSIDE )
+	
+		else if (nCode == MOUSE_INSIDE)
 		{
-			SetValue( false, false );
+			m->m_bMouseOver = true;
+		
+			Invalidate();
+			Flush();
 		}
 		else
 		{
-			SetValue( true, false );
+			m->m_bMouseOver = false;
+			Invalidate();
+			Flush();
 		}
 	}
+	View::MouseMove( cPosition, nCode, nButtons, pcData );
 }
 
 void Button::Activated( bool bIsActive )
@@ -257,52 +271,112 @@ void Button::Activated( bool bIsActive )
 
 void Button::Paint( const Rect & cUpdateRect )
 {
-	Rect cBounds = GetBounds();
-
-	SetEraseColor( get_default_color( COL_NORMAL ) );
-
-	uint32 nFrameFlags = ( GetValue().AsBool(  ) && IsEnabled(  ) )? FRAME_RECESSED : FRAME_RAISED;
-
-	if( IsEnabled() && ( HasFocus() || ( GetWindow(  )->GetDefaultButton(  ) == this ) ) )
+	Color32_s sTextColor;
+	Color32_s sFrameColor;
+	Color32_s sFGColor;
+	
+	
+	if (IsEnabled())
 	{
-		if( HasFocus() ) {
-			SetFgColor( get_default_color( COL_FOCUS ) );
-		} else {
-			SetFgColor( 0, 0, 0 );
+		sFGColor = get_default_color(COL_NORMAL);
+		
+		if (HasFocus())
+		{
+			sFrameColor = get_default_color(COL_FOCUS);
+			sTextColor = os::Color32_s(0,0,0);
 		}
-		DrawLine( Point( cBounds.left, cBounds.top ), Point( cBounds.right, cBounds.top ) );
-		DrawLine( Point( cBounds.right, cBounds.bottom ) );
-		DrawLine( Point( cBounds.left, cBounds.bottom ) );
-		DrawLine( Point( cBounds.left, cBounds.top ) );
-		cBounds.Resize( 1, 1, -1, -1 );
+		else if (m->m_bMouseOver)
+		{
+			sFrameColor = get_default_color(COL_ICON_SELECTED);
+			sFGColor = get_default_color(COL_ICON_SELECTED);
+			sTextColor = os::Color32_s(0,0,0);
+		}
+		else if (GetWindow(  )->GetDefaultButton(  ) == this )
+		{
+			sFrameColor = os::Color32_s(0,0,0);
+			sTextColor = os::Color32_s(0,0,0);
+		}
+		else
+		{
+			sFrameColor = get_default_color(COL_SHADOW);
+			sTextColor = os::Color32_s(0,0,0);
+		}		
 	}
-
-	DrawFrame( cBounds, nFrameFlags );
-
-	if( IsEnabled() )
-	{
-		SetFgColor( 0, 0, 0 );
-	}
+	
 	else
 	{
-		SetFgColor( 255, 255, 255 );
-	}
-	SetBgColor( get_default_color( COL_NORMAL ) );
-
-	if( GetValue().AsBool(  ) )
-	{
-		cBounds.MoveTo( 1, 1 );
+		sFGColor = os::Color32_s(100,100,100);
+		sTextColor = os::Color32_s(100,100,100);
+		sFrameColor = os::Color32_s(100,100,100);
 	}
 
-	DrawText( cBounds, GetLabel(), DTF_ALIGN_CENTER | DTF_UNDERLINES );
-	if( IsEnabled() == false )
+	
+	SetFgColor(sFGColor);
+	SetBgColor(sFGColor);
+	EraseRect(GetBounds());
+	DrawRoundedFrame(os::Rect(1,4,-1,-4),sFrameColor);
+	
+	SetFgColor(sTextColor);
+	DrawText( GetBounds(), GetLabel(), DTF_ALIGN_CENTER | DTF_UNDERLINES );
+	
+}
+
+void Button :: Paint( graphics::Graphics& cGraphics, const Rect & cUpdateRect )
+{	
+	Rect cBounds = GetBounds();
+	cBounds.Resize( 0.5f, 0.5f, -0.5f, -0.5f );
+
+	graphics::Penstyle cText( "black" );
+	graphics::Penstyle cOuterBorder( "black", 1.0f );
+	graphics::Penstyle cInnerBorder( "#eeeeee", 1.0f );
+	graphics::FillstyleSolid cBackground( graphics::Colour( graphics::Colour::COL_NORMAL ) );
+
+	// Set up appearence of the button based on the current status of the button
+	if (IsEnabled())
 	{
-		SetFgColor( 100, 100, 100 );
-		SetDrawingMode( DM_OVER );
-		cBounds.MoveTo( -1, -1 );
-		DrawText( cBounds, GetLabel(), DTF_ALIGN_CENTER | DTF_UNDERLINES );
-		SetDrawingMode( DM_COPY );
+		if (m->m_bMouseOver)
+			cInnerBorder.SetColour( graphics::Colour( graphics::Colour::COL_ICON_SELECTED ) );
 	}
+	else 
+	{
+	}
+
+	// Create the looks of the outer border for the button
+	graphics::Shape cOuterShape;
+	cOuterShape.RoundRectangle( cBounds, 15 );
+
+	// Create the looks of the outer border for the button
+	graphics::Shape cInnerShape;
+	cInnerShape.RoundRectangle( cBounds.Resize( 2, 2, -2, -2 ), 15 );
+
+	// Draw button background
+	cGraphics.SetFillstyle( cBackground );
+	cGraphics.FillShape( cOuterShape );
+
+	// Draw the outer border
+	cGraphics.SetPen( cOuterBorder );
+	cGraphics.DrawShape( cOuterShape );
+
+	// Draw the inner border
+	cGraphics.SetPen( cInnerBorder );
+	cGraphics.DrawShape( cInnerShape );
+
+	// Draw focus if any
+	if( HasFocus() )
+	{		
+		graphics::Penstyle cFocus( "black", 1.0f );
+		cFocus.SetDashes( "border" );
+
+		graphics::Shape cFocusShape;
+		cFocusShape.RoundRectangle( cBounds.Resize( 2, 2, -2, -2 ), 15 );
+
+		cGraphics.SetPen( cFocus );
+		cGraphics.DrawShape( cFocusShape );
+	}
+
+	// And finally draw the text within the button
+	cGraphics.SetPen( cText );
+	cGraphics.DrawText( GetBounds(), GetLabel(), graphics::TEXTLAYOUT_ALIGN_CENTER, true, graphics::TEXTLAYOUT_ALIGN_MIDDLE );
 }
 
 void Button::SetInputMode( InputMode eInputMode )

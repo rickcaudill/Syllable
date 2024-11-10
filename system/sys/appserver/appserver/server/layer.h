@@ -29,6 +29,8 @@
 #include <gui/point.h>
 #include <string>
 
+#include "graphics_cairo.h"
+
 #include "fontnode.h"
 
 namespace os {
@@ -269,6 +271,8 @@ public:
     bool			m_bFontPalletteValid;
     bool			m_bIsAddedToFont;
     FontNode::DependencyList_t::iterator	m_cFontViewListIterator;
+
+	GraphicsCairo* m_pcGraphicsCairo;
 
 	os::String m_cSelectionBuffer;
 };

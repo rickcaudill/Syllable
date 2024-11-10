@@ -3,13 +3,13 @@ SCREENSHOT = n
 CFLAGS   += -c -fexceptions -ffast-math $(shell freetype-config --cflags)
 CXXFLAGS += -c -fexceptions -ffast-math $(shell freetype-config --cflags)
 AOPTS    = -c
-LIBS     = -lsyllable
+LIBS     = -lsyllable 
 
 OBJS =  ddriver.o ddline.o ddmemory.o event.o vesadrv.o server.o input.o			\
 	config.o keyboard.o keymap.o defaultkeymap.o			\
 	sapplication.o swindow.o layer.o toplayer.o render.o bitmap.o crdtrans.o	\
 	sfont.o fontnode.o wndborder.o desktop.o winselect.o sprite.o	\
-	clipboard.o windowdecorator.o defaultdecorator.o
+	clipboard.o windowdecorator.o defaultdecorator.o graphics_cairo.o
 
 ifeq ($(SCREENSHOT),y)
 	OBJS += screenshot.o

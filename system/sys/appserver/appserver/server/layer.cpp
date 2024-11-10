@@ -39,6 +39,7 @@
 #include <util/message.h>
 
 using namespace os;
+using namespace graphics;
 
 LayerGate g_cLayerGate( "layer_gate" );
 
@@ -93,6 +94,8 @@ void Layer::Init()
 	m_pcPrevVisibleFullReg = NULL;
 	m_pcVisibleDamageReg = NULL;
 	m_bForceRedraw = false;
+
+	m_pcGraphicsCairo = new GraphicsCairo( this );
 
 	memset( m_asFontPallette, 255, sizeof( m_asFontPallette ) );
 	memset( m_anFontPalletteConverted, NUM_FONT_GRAYS, sizeof( uint32 ) );
@@ -174,6 +177,8 @@ Layer::~Layer()
 		m_pcBackbuffer->Release();
 		m_pcBackbuffer = NULL;
 	}
+
+	delete m_pcGraphicsCairo;
 }
 
 //----------------------------------------------------------------------------
@@ -1790,6 +1795,7 @@ void Layer::Paint( const IRect & cUpdateRect, bool bUpdate )
 	}
 }
 
+
 //----------------------------------------------------------------------------
 // NAME:
 // DESC:
@@ -1803,3 +1809,5 @@ Layer *FindLayer( int nToken )
 
 	return ( pcLayer );
 }
+
+
