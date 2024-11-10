@@ -1,4 +1,4 @@
-# Generated from $Id: Makefile.in,v 1.1 2004/06/06 23:13:38 vanders Exp $.
+# Generated from $Id$.
 
 srcdir = @srcdir@
 

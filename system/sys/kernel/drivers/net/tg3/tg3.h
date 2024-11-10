@@ -1,4 +1,4 @@
-/* $Id: tg3.h,v 1.2 2009/11/03 16:22:20 vanders Exp $
+/* $Id$
  * tg3.h: Definitions for Broadcom Tigon3 ethernet driver.
  *
  * Copyright (C) 2001, 2002, 2003, 2004 David S. Miller (davem@redhat.com)

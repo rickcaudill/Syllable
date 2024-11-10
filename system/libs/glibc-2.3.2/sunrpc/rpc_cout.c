@@ -32,7 +32,7 @@
  * From: @(#)rpc_cout.c 1.13 89/02/22 (C) 1987 SMI
  */
 char cout_rcsid[] =
-"$Id: rpc_cout.c,v 1.1 2004/06/06 23:14:25 vanders Exp $";
+"$Id$";
 
 /*
  * rpc_cout.c, XDR routine outputter for the RPC protocol compiler

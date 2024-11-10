@@ -12,7 +12,7 @@ use FileHandle;
 use File::Compare qw(compare);
 
 @ISA = qw(Exporter);
-($VERSION = '$Revision: 1.1.1.1 $ ') =~ tr/[0-9].//cd;
+($VERSION = '$Revision$ ') =~ tr/[0-9].//cd;
 @EXPORT = qw (run_tests);
 
 my $debug = $ENV{DEBUG};

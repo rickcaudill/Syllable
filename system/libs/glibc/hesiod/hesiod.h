@@ -1,4 +1,4 @@
-/* $Id: hesiod.h,v 1.3 2002/08/19 21:31:14 vanders Exp $ */
+/* $Id$ */
 
 /*
  * Copyright (c) 1996 by Internet Software Consortium.

@@ -55,7 +55,7 @@
 
 /*
  *	@(#)resolv.h	8.1 (Berkeley) 6/2/93
- *	$Id: resolv.h,v 1.3 2002/08/20 18:16:22 vanders Exp $
+ *	$Id$
  */
 
 #ifndef _RESOLV_H

@@ -16,7 +16,7 @@
  * (C) Copyright 1999 Randy Dunlap
  * (C) Copyright 1999 Gregory P. Smith
  *
- * $Id: usb-uhci.c,v 1.11 2009/11/03 16:22:19 vanders Exp $
+ * $Id$
  */
  
 
@@ -44,7 +44,7 @@
 
 //#define DEBUG
 
-#define VERSTR "$Revision: 1.11 $ time " __TIME__ " " __DATE__
+#define VERSTR "$Revision$ time " __TIME__ " " __DATE__
 
 #include "usb-uhci.h"
 #include "usb-uhci-debug.h"

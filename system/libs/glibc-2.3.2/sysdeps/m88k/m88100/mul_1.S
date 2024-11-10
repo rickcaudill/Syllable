@@ -6,18 +6,18 @@
 ; This file is part of the GNU MP Library.
 
 ; The GNU MP Library is free software; you can redistribute it and/or modify
-; it under the terms of the GNU General Public License as published by
-; the Free Software Foundation; either version 2, or (at your option)
-; any later version.
+; it under the terms of the GNU Lesser General Public License as published by
+; the Free Software Foundation; either version 2.1 of the License, or (at your
+; option) any later version.
 
-; The GNU MP Library is distributed in the hope that it will be useful,
-; but WITHOUT ANY WARRANTY; without even the implied warranty of
-; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-; GNU General Public License for more details.
+; The GNU MP Library is distributed in the hope that it will be useful, but
+; WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+; or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+; License for more details.
 
-; You should have received a copy of the GNU General Public License
-; along with the GNU MP Library; see the file COPYING.  If not, write to
-; the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+; You should have received a copy of the GNU Lesser General Public License
+; along with the GNU MP Library; see the file COPYING.LIB.  If not, write to
+; the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
 ; INPUT PARAMETERS
@@ -47,9 +47,10 @@
 ; less cycles/limb; the (S2_LIMB < 0x10000) case would run in 11
 ; cycles/limb.  (Assuming infinite unrolling.)
 
-#include "sysdep.h"
-
-ENTRY (__mpn_mul_1)
+	text
+	align	 16
+	global	 ___mpn_mul_1
+___mpn_mul_1:
 
 	; Make S1_PTR and RES_PTR point at the end of their blocks
 	; and negate SIZE.

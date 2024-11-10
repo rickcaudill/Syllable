@@ -1,4 +1,4 @@
-/* $Id: parport.h,v 1.2 2009/11/03 16:22:19 vanders Exp $ */
+/* $Id$ */
 
 /*
  * Any part of this program may be used in documents licensed under

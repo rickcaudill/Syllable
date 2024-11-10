@@ -34,7 +34,7 @@
  */
 /*
  * HISTORY
- * $Log: hurdmalloc.c,v $
+ * $Log$
  * Revision 1.1  2004/06/06 23:13:42  vanders
  * Glibc 2.3.2 for Syllable
  *

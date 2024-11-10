@@ -1,13 +1,13 @@
 # Swedish messages for tar
 # Copyright © 1996 Free Software Foundation, Inc.
 # Jan Djärv <Jan.Djarv@mbox200.swipnet.se>, 1996.
-# $Revision: 1.1.1.1 $
+# $Revision$
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: tar 1.12\n"
 "POT-Creation-Date: 1999-07-04 23:46-0700\n"
-"PO-Revision-Date: $Date: 2002/06/28 21:18:32 $\n"
+"PO-Revision-Date: $Date$\n"
 "Last-Translator: Jan Djärv <Jan.Djarv@mbox200.swipnet.se>\n"
 "Language-Team: Swedish <sv@li.org>\n"
 "MIME-Version: 1.0\n"

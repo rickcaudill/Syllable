@@ -25,10 +25,10 @@
  */
 
 /* This file was broken out from:
-	$Log: error_compat.c,v $
+	$Log$
 	Revision 1.1  2004/06/06 23:14:15  vanders
 	Glibc 2.3.2 for Syllable
-	
+
 	Revision 1.2  1997/03/16 17:41:36  drepper
 	(__mach_error_map_compat): Give full prototype.
 	

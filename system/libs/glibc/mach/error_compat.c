@@ -25,10 +25,10 @@
  */
 
 /* This file was broken out from:
-	$Log: error_compat.c,v $
+	$Log$
 	Revision 1.3  2002/08/19 21:31:16  vanders
 	Fixed & upto date
-	
+
 	Revision 1.2  1997/03/16 17:41:36  drepper
 	(__mach_error_map_compat): Give full prototype.
 	

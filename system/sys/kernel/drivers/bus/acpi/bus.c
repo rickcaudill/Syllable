@@ -1,5 +1,5 @@
 /*
- *  acpi_bus.c - ACPI Bus Driver ($Revision: 1.6 $)
+ *  acpi_bus.c - ACPI Bus Driver ($Revision$)
  *
  *  Copyright (C) 2001, 2002 Paul Diefenbaugh <paul.s.diefenbaugh@intel.com>
  *

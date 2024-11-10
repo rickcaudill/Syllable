@@ -48,7 +48,7 @@
  */
 /*
  * HISTORY
- * $Log: msgserver.c,v $
+ * $Log$
  * Revision 1.3  2002/08/19 21:31:16  vanders
  * Fixed & upto date
  *

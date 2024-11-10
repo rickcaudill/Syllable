@@ -1,5 +1,5 @@
 # @configure_input@
-# From $Id: config.make.in,v 1.3 2002/08/19 17:25:36 vanders Exp $.
+# From $Id$.
 # Don't edit this file.  Put configuration parameters in configparms instead.
 
 version = @VERSION@

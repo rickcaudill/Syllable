@@ -4,7 +4,7 @@
  * of the GNU Public License, incorporated herein by reference.
  *
  * Module         : sk_g16.h
- * Version        : $Revision: 1.3 $
+ * Version        : $Revision$
  *
  * Author         : M.Hipp (mhipp@student.uni-tuebingen.de)
  * changes by     : Patrick J.D. Weichmann
@@ -15,7 +15,7 @@
  *                  the am7990 (LANCE) chip used for writing a
  *                  network device driver which uses this chip
  *
- * $Log: sk_g16.h,v $
+ * $Log$
  * Revision 1.3  2002/12/23 16:44:05  vanders
  * Updated to v0.92 files
  *

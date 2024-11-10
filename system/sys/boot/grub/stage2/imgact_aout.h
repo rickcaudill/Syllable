@@ -32,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)exec.h	8.1 (Berkeley) 6/11/93
- *	$Id: imgact_aout.h,v 1.3 2002/12/23 16:45:54 vanders Exp $
+ *	$Id$
  */
 /*
  *  11/23/95 - Kludge to get "ntohl" null macro added.  -- ESB

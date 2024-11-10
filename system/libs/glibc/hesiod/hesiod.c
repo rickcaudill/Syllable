@@ -41,7 +41,7 @@
  * it uses res_send() and accesses _res.
  */
 
-static const char rcsid[] = "$Id: hesiod.c,v 1.3 2002/08/19 21:31:14 vanders Exp $";
+static const char rcsid[] = "$Id$";
 
 #include <sys/types.h>
 #include <netinet/in.h>

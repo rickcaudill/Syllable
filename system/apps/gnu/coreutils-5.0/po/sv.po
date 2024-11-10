@@ -4,7 +4,7 @@
 # Thomas Olsson <cid95tho@lustudat.student.lu.se>, 1997.
 # Daniel Resare <daniel@resare.com> 1999, 2000.
 # Göran Uddeborg <goeran@uddeborg.pp.se>, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003.
-# $Revision: 1.1.1.1 $
+# $Revision$
 #
 msgid ""
 msgstr ""

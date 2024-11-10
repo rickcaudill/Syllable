@@ -4,7 +4,7 @@
 # Created: 1993-05-16
 # Public domain
 
-# $Id: mkinstalldirs,v 1.1 2004/06/06 23:14:22 vanders Exp $
+# $Id$
 
 errstatus=0
 

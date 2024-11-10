@@ -11,7 +11,7 @@
 
 /*
  * from: @(#)fdlibm.h 5.1 93/09/24
- * $Id: math_private.h,v 1.3 2002/08/20 18:16:16 vanders Exp $
+ * $Id$
  */
 
 #ifndef _MATH_PRIVATE_H_

@@ -2,7 +2,7 @@
 /* Driver for USB Mass Storage compliant devices
  * SCSI Connecting Glue Header File
  *
- * $Id: scsi_convert.h,v 1.2 2009/11/03 16:22:19 vanders Exp $
+ * $Id$
  *
  * Current development and maintenance by:
  *   (c) 1999, 2000 Matthew Dharm (mdharm-usb@one-eyed-alien.net)

@@ -1,4 +1,4 @@
-/*	BSDI $Id: queue.h,v 1.3 2002/08/19 18:04:51 vanders Exp $	*/
+/*	BSDI $Id$	*/
 
 /*
  * Copyright (c) 1991, 1993

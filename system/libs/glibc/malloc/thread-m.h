@@ -19,7 +19,7 @@
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-/* $Id: thread-m.h,v 1.3 2002/08/19 21:31:18 vanders Exp $
+/* $Id$
    One out of _LIBC, USE_PTHREADS, USE_THR or USE_SPROC should be
    defined, otherwise the token NO_THREADS and dummy implementations
    of the macros will be defined.  */

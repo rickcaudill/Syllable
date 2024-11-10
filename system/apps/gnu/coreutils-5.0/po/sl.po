@@ -1,7 +1,7 @@
 # -*- mode: po; -*- Slovenian message catalog for GNU coreutils.
 # Copyright (C) 1996, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 # Primo¾ Peterlin <primoz.peterlin@biofiz.mf.uni-lj.si>, 1996, 1999, 2000, 2001, 2002, 2003.
-# $Id: sl.po,v 1.1.1.1 2003/06/14 19:12:48 kajdevos Exp $
+# $Id$
 #
 msgid ""
 msgstr ""

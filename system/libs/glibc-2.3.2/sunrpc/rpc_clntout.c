@@ -32,7 +32,7 @@
  * From: @(#)rpc_clntout.c 1.11 89/02/22 (C) 1987 SMI
  */
 char clntout_rcsid[] =
-  "$Id: rpc_clntout.c,v 1.1 2004/06/06 23:14:25 vanders Exp $";
+  "$Id$";
 
 /*
  * rpc_clntout.c, Client-stub outputter for the RPC protocol compiler

@@ -32,7 +32,7 @@
  * From: @(#)rpc_scan.c 1.11 89/02/22 (C) 1987 SMI
  */
 char scan_rcsid[] =
-  "$Id: rpc_scan.c,v 1.1 2004/06/06 23:14:25 vanders Exp $";
+  "$Id$";
 
 /*
  * rpc_scan.c, Scanner for the RPC protocol compiler

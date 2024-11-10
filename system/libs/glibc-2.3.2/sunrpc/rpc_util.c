@@ -32,7 +32,7 @@
  * From: @(#)rpc_util.c 1.11 89/02/22 (C) 1987 SMI
  */
 char util_rcsid[] =
-  "$Id: rpc_util.c,v 1.1 2004/06/06 23:14:26 vanders Exp $";
+  "$Id$";
 
 /*
  * rpc_util.c, Utility routines for the RPC protocol compiler

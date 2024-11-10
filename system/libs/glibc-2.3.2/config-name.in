@@ -1,5 +1,5 @@
 /* @configure_input@ -*- C -*-
-   Generated from $Id: config-name.in,v 1.1 2004/06/06 23:13:38 vanders Exp $.
+   Generated from $Id$.
 
    This is used only by the generic `uname' function for systems with no real
    `uname' call.  If this data is not correct, it does not matter much.  */

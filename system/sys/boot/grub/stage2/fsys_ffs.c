@@ -50,7 +50,7 @@
  * the rights to redistribute these changes.
  *
  *	from: Mach, Revision 2.2  92/04/04  11:35:49  rpd
- *	$Id: fsys_ffs.c,v 1.3 2002/12/23 16:45:54 vanders Exp $
+ *	$Id$
  */
 
 #ifdef FSYS_FFS

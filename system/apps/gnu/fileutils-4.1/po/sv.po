@@ -1,7 +1,7 @@
 # Swedish messages for fileutils.
 # Copyright © 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
 # Göran Uddeborg <göran@uddeborg.pp.se>, 1996, 1997, 1998, 1999, 2000.
-# $Revision: 1.1.1.1 $
+# $Revision$
 #
 msgid ""
 msgstr ""

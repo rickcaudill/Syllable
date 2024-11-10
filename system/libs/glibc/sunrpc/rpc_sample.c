@@ -32,7 +32,7 @@
  * From: @(#)rpc_sample.c  1.1  90/08/30  (C) 1987 SMI
  */
 char sample_rcsid[] =
-  "$Id: rpc_sample.c,v 1.3 2002/08/20 18:40:51 vanders Exp $";
+  "$Id$";
 
 /*
  * rpc_sample.c, Sample client-server code outputter for the RPC protocol compiler

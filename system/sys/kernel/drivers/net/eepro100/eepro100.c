@@ -87,7 +87,7 @@
 
 //static const char *version =
 //"eepro100.c:v1.09j-t 9/29/99 Donald Becker http://cesdis.gsfc.nasa.gov/linux/drivers/eepro100.html\n"
-//"eepro100.c: $Revision: 1.8 $ 2000/05/31 Modified by Andrey V. Savochkin <saw@saw.sw.com.sg> and others\n"
+//"eepro100.c: $Revision$ 2000/05/31 Modified by Andrey V. Savochkin <saw@saw.sw.com.sg> and others\n"
 //"eepro100.c: VA Linux custom, Dragan Stancevic <visitor@valinux.com> 2000/11/15\n";
 static const char *version =
 "eepro100: Intel EtherExpress Pro 10/100 NIC driver v0.2\n"

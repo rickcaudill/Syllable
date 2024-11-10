@@ -36,7 +36,7 @@
  */
 /*
  * HISTORY
- * $Log: hurdmalloc.c,v $
+ * $Log$
  * Revision 1.3  2002/08/19 18:54:33  vanders
  * Fixed & upto date
  *

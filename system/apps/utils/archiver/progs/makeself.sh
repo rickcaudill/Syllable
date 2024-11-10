@@ -2,7 +2,7 @@
 #
 # makeself 1.6.0
 #
-# $Id: makeself.sh,v 1.1 2003/02/10 04:23:39 cau0730 Exp $
+# $Id$
 #
 # Utility to create self-extracting tar.gz archives.
 # The resulting archive is a file holding the tar.gz archive with

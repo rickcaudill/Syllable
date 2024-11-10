@@ -1,7 +1,7 @@
 
 /* Driver for USB Mass Storage compliant devices
  *
- * $Id: transport.c,v 1.7 2009/11/03 16:22:19 vanders Exp $
+ * $Id$
  *
  * Current development and maintenance by:
  *   (c) 1999, 2000 Matthew Dharm (mdharm-usb@one-eyed-alien.net)

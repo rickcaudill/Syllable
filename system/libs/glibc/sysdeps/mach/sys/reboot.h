@@ -25,7 +25,7 @@
  */
 /*
  * HISTORY
- * $Log: reboot.h,v $
+ * $Log$
  * Revision 1.3  2002/08/22 19:15:27  vanders
  * Fixed & upto date
  *
