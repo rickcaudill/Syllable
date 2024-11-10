@@ -22,7 +22,7 @@
 
 #ifdef SAVE_RCSID
 static char rcsid =
- "@(#) $Id: SDL_SylApp.cc,v 1.2 2006/10/15 12:07:30 aklenke Exp $";
+ "@(#) $Id$";
 #endif
 
 /* Handle the Syllable specific portions of the application */

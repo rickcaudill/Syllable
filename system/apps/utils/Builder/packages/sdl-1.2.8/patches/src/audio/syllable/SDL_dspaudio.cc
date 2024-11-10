@@ -25,7 +25,7 @@
 
 #ifdef SAVE_RCSID
 static char rcsid =
- "@(#) $Id: SDL_dspaudio.cc,v 1.2 2006/10/15 12:07:30 aklenke Exp $";
+ "@(#) $Id$";
 #endif
 
 /* Allow access to a raw mixing buffer */

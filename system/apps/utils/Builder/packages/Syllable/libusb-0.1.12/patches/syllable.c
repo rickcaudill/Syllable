@@ -5,8 +5,8 @@
  * to the point where it's really a unique implementation. It's maybe halfway
  * between the Linux & BSD implementations.
  *
- * $Id: syllable.c,v 1.1 2007/08/16 17:48:21 kajdevos Exp $
- * $Name:  $
+ * $Id$
+ * $Name$
  *
  * This library is covered by the LGPL, read LICENSE for details.
  */

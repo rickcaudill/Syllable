@@ -1,7 +1,7 @@
 #
 # /etc/login.defs - Configuration control definitions for the shadow package.
 #
-#	$Id: login.defs,v 1.7 2010/01/25 14:17:59 kajdevos Exp $
+#	$Id$
 #
 
 #

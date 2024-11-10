@@ -1,35 +1,30 @@
 authors				Kaj de Vos
 status				testing
 warnings
-	Cleans up kernel modules area in the running system after a system image installation!
-	Is specific to linux-2.6.27.44-Syllable kernel!
+	Cleans up kernel modules area in the running system!
+	Is specific to linux-2.6.25-Syllable kernel!
 	Assumes the host system has this same kernel!
 
 ; Overwrites the built kernel source. We don't need it again, but at least
 ; it prevents the huge source tree from being unregistered:
-packages			linux-2.6.27.44
+packages			linux-2.6.25
 
-make				true
-
-super-install
 ; Kernel should already be there:
 merge-install
 
-; Clean out kernel source link from the host system:
-install				rm /lib/modules/2.6.27.44-Syllable/build
+make				true
+install				sudo rm /lib/modules/2.6.25-Syllable/build
 
-_links
+links
 ;	Assume the host had this (same) kernel:
-	/system/resources/Linux/2.6.27.44/framework/libraries/modules/2.6.27.44-Syllable	/lib/modules/
+	/system/resources/linux/2.6.25/lib/modules	/lib/
 ;	(Repair damage from Linux-Fusion:)
-;	framework/libraries/modules															/lib/
+;	lib/modules									/lib/
 ;	Give the system access to modules of all kernel versions:
 ;	This, however, leads depmod to create module files within the symlink pool:
-;	/system/indexes/framework/libraries/modules											/lib/
+;	/system/indexes/lib/modules					/lib/
 
+; Source is not there any more because it's moved to linux--cleanup, so it did not get unregistered:
 _delete-files
-;	Clean out kernel source link from the host system:
-	/lib/modules/2.6.27.44-Syllable/build
-;	Source is not there any more because it's moved to Linux--cleanup, so it did not get unregistered:
-	/system/indexes/framework/libraries/modules/2.6.27.44-Syllable/build
-	/system/indexes/framework/libraries/modules/2.6.27.44-Syllable/source
+	/system/indexes/lib/modules/2.6.25-Syllable/build
+	/system/indexes/lib/modules/2.6.25-Syllable/source

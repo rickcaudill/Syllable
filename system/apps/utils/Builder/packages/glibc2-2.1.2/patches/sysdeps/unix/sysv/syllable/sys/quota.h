@@ -35,7 +35,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Version: $Id: quota.h,v 1.1 2004/04/27 09:30:25 kajdevos Exp $
+ * Version: $Id$
  */
 
 #ifndef _SYS_QUOTA_H

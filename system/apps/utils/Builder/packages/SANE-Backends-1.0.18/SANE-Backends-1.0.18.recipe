@@ -2,10 +2,8 @@ authors
 	Kristian Van Der Vliet
 	Kaj de Vos
 status				testing
-warnings			Builds upon at least LibJPEG in the host system.
 
-title				Scanner framework
-headline			Universal scanner interface
+headline			SANE universal scanner interface
 description
 	SANE stands for "Scanner Access Now Easy" and is an application programming interface (API) that provides standardized access to any raster image scanner hardware (flatbed scanner, hand-held scanner, video- and still-cameras, frame-grabbers, etc.).
 licenses			GPL+exception
@@ -18,27 +16,21 @@ locations
 	ftp://ftp2.sane-project.org/pub/sane/sane-backends-1.0.18/
 ;	Delivers bogus .tar.bz2 file:
 ;	http://alioth.debian.org/frs/download.php/1669/
-packages			sane-backends-1.0.18
 
 recommends
-	LibUSB >= 0.1.8
-	LibJPEG >= 6b
-;	?:
-;	LibTIFF
+	libusb >= 0.1.8
+	libjpeg >= 6b
 	libieee1284 >= 0.1.5
 	libgphoto2 >= 2
 
 build-dir			.
 
-;no-sysconfdir
-_configure-options
-	--sysconfdir=/etc
+;configure-options
 ;	--disable-shared
 ;	--enable-locking
 
 system-prefix-var	DESTDIR
 
 documentation
-	README LICENSE COPYING PROBLEMS NEWS ChangeLog AUTHORS
-;	doc/*
-internal-docs		PROJECTS
+	README LICENSE COPYING PROBLEMS NEWS ChangeLog AUTHORS PROJECTS
+;	doc

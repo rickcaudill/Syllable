@@ -20,7 +20,6 @@
 #ifndef _BITS_LIBC_LOCK_H
 #define _BITS_LIBC_LOCK_H 1
 
-#ifdef _LIBC
 #include <errno.h>
 #include <pthread.h>
 #include <sys/debug.h>
@@ -174,4 +173,3 @@ void* __libc_getspecific( __libc_key_t key );
 
 #endif	/* bits/libc-lock.h */
 
-#endif

@@ -25,7 +25,7 @@
 
 #ifdef SAVE_RCSID
 static char rcsid =
- "@(#) $Id: SDL_syssem.c,v 1.1 2006/09/13 04:26:07 kajdevos Exp $";
+ "@(#) $Id$";
 #endif
 
 /* Semaphores in the Syllable environment */

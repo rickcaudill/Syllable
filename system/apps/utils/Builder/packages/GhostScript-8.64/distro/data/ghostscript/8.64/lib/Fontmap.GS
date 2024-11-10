@@ -13,7 +13,7 @@
 % contact Artifex Software, Inc., 101 Lucas Valley Road #110,
 % San Rafael, CA  94903, U.S.A., +1(415)492-9861.
 
-% $Id: Fontmap.GS,v 1.1 2010/03/03 00:17:27 kajdevos Exp $
+% $Id$
 % Fontmap - standard font catalog for Ghostscript.
 
 % ----------------------------------------------------------------

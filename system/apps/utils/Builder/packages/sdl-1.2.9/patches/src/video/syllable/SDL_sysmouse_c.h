@@ -22,7 +22,7 @@
 
 #ifdef SAVE_RCSID
 static char rcsid =
- "@(#) $Id: SDL_sysmouse_c.h,v 1.1 2006/09/03 14:51:47 kajdevos Exp $";
+ "@(#) $Id$";
 #endif
 
 #include "SDL_lowvideo.h"

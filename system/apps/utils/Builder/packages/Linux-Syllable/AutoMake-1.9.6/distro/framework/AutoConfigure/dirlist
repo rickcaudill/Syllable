@@ -1,4 +1,3 @@
-/usr/share/aclocal
-/resources/index/framework/AutoConfigure
+/resources/indexes/framework/AutoConfigure
 /usr/local/share/aclocal
-/system/index/framework/AutoConfigure
+/system/indexes/framework/AutoConfigure

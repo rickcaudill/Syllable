@@ -1,6 +1,4 @@
-authors
-	Kaj de Vos
-	Michael Saunders
+authors				Kaj de Vos
 status				testing
 
 headline			SDL audio mixer library
@@ -19,7 +17,7 @@ recommends
 ;	smpeg
 ;	timidity
 ;	mikmod
-	LibVorbis
+	libvorbis
 
 configure-options
 ;	Bare LibMikMod:
@@ -30,4 +28,5 @@ system-prefix-var	DESTDIR
 
 documentation		README COPYING CHANGES
 ; For some packages:
-;links				SDL/SDL_mixer.h include/
+links				SDL/SDL_mixer.h include/
+

@@ -22,7 +22,7 @@
 
 #ifdef SAVE_RCSID
 static char rcsid =
- "@(#) $Id: SDL_sysvideo.cc,v 1.3 2007/02/22 19:01:33 aklenke Exp $";
+ "@(#) $Id$";
 #endif
 
 /* Syllable based framebuffer implementation */

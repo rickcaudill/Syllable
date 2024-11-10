@@ -1,9 +1,11 @@
 authors 			Kaj de Vos
 status				testing
 
-inherits			OpenSSL-0.9.8k
+inherits			openssl-0.9.8h
+
+packages			openssl-0.9.8h
 
 install-vars
 	OPENSSLDIR		"$IMAGE/etc/ssl"
-	INSTALLTOP		"$STAGE/OpenSSL"
-	MANDIR			"$STAGE/OpenSSL/manuals"
+	INSTALLTOP		"$STAGE/openssl"
+	MANDIR			"$STAGE/openssl/man"

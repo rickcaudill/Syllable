@@ -1,7 +1,6 @@
 authors				Kaj de Vos
-status				testing
+status				developing
 
-version				1.0.0
 headline			Network services framework written in REBOL
 description
 	REBOL/Services implements network services - similar in concept to web services, but extremely lightweight by comparison. The design provides an easy way to send requests to REBOL-based services on the Internet. It is also possible to create gateways to other types of services.
@@ -19,8 +18,6 @@ packages			rebol-services-100
 files
 	tutorial.html
 	examples.html
-	security.html
-	faq.html
 	code/simple.html
 	code/basic.html
 	code/guestbook.html
@@ -33,11 +30,14 @@ run-needs			REBOL >= 2.6 < 3
 make				true
 
 install-tree
-	framework/REBOL/Services
+	lib
+	lib/REBOL
+	lib/REBOL/Services
+	documentation
 	documentation/code
 install				true
 install-files
-	*.r				framework/REBOL/Services/
+	*.r				lib/REBOL/Services/
 	simple.html		documentation/code/
 	basic.html		documentation/code/
 	guestbook.html	documentation/code/

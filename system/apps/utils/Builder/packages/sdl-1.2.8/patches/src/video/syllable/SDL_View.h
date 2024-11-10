@@ -29,7 +29,7 @@
 
 #ifdef SAVE_RCSID
 static char rcsid =
- "@(#) $Id: SDL_View.h,v 1.3 2007/03/17 16:31:18 aklenke Exp $";
+ "@(#) $Id$";
 #endif
 
 /* This is the event handling and graphics update portion of SDL_BWin */

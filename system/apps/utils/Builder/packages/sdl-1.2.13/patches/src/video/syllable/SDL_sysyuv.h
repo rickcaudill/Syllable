@@ -26,7 +26,7 @@
 
 #ifdef SAVE_RCSID
 static char rcsid =
- "@(#) $Id: SDL_sysyuv.h,v 1.1 2008/12/11 03:07:10 kajdevos Exp $";
+ "@(#) $Id$";
 #endif /* SAVE_RCSID */
 
 /* This is the Syllable implementation of YUV video overlays */
