@@ -2774,9 +2774,22 @@ void View::DrawFrame( const Rect & a_cRect, uint32 nStyle )
 		bSunken = true;
 	}
 
-	Color32_s sFgCol = get_default_color( COL_SHINE );
-	Color32_s sBgCol = get_default_color( COL_SHADOW );
-
+	Color32_s sFgCol;
+	Color32_s sBgCol;
+	
+	if (nStyle & FRAME_KEEP_COLOR)
+	{
+			sBgCol = bg_save;
+			sFgCol = fg_save;
+	}
+	
+	else
+	{
+		sFgCol = get_default_color(COL_SHINE);
+		sBgCol = get_default_color(COL_SHADOW);
+	}
+	
+	
 	if( nStyle & FRAME_DISABLED )
 	{
 		sFgCol = Tint( sFgCol, 0.6f );
