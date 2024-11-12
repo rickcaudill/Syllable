@@ -59,6 +59,8 @@ static Color32_s g_asDefaultColors[] = {
 	Color32_s( 0xBA, 0xC7, 0xE3, 0xff ),    // COL_ICON_SELECTED
 	Color32_s( 0xff, 0xff, 0xff, 0xff ),	// COL_ICON_BACKGROUND
 	Color32_s( 0x00, 0xCC, 0x00, 0xff ),    // COL_FOCUS
+	Color32_s( 100, 100, 100, 0xff), 		// COL_DISABLED
+
 };
 
 /** Get the value of one of the standard system colors.
@@ -2774,9 +2776,22 @@ void View::DrawFrame( const Rect & a_cRect, uint32 nStyle )
 		bSunken = true;
 	}
 
-	Color32_s sFgCol = get_default_color( COL_SHINE );
-	Color32_s sBgCol = get_default_color( COL_SHADOW );
-
+	Color32_s sFgCol;
+	Color32_s sBgCol;
+	
+	if (nStyle & FRAME_KEEP_COLOR)
+	{
+			sBgCol = bg_save;
+			sFgCol = fg_save;
+	}
+	
+	else
+	{
+		sFgCol = get_default_color(COL_SHINE);
+		sBgCol = get_default_color(COL_SHADOW);
+	}
+	
+	
 	if( nStyle & FRAME_DISABLED )
 	{
 		sFgCol = Tint( sFgCol, 0.6f );

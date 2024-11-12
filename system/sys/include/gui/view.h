@@ -94,7 +94,7 @@ enum default_color_t
     COL_ICON_SELECTED,
 	COL_ICON_BG,
 	COL_FOCUS,
-	COL_DISABLED,
+    COL_DISABLED,
     COL_COUNT
 };
 
