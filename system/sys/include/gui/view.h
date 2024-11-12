@@ -397,9 +397,9 @@ public:
     void		DrawBitmap( const Bitmap* pcBitmap, const Rect& cSrcRect, const Rect& cDstRect );
     void		EraseRect( const Rect& cRect );
     void		DrawFrame( const Rect& cRect, uint32 nFlags );
-    void        DrawRoundedFrame(const os::Rect& cResize,const os::Color32_s& sColor);
-    void        DrawRoundedFrame(const os::Rect& cBounds, const os::Rect& cResize, const os::Color32_s& sColor)
-
+	void        DrawRoundedFrame(const os::Rect& cReizeFrame = os::Rect(1,4,-1,-4),const os::Color32_s& cColor = get_default_color(COL_SHADOW));
+	void        DrawRoundedFrame(const os::Rect& cFrame,const os::Rect& cReizeFrame = os::Rect(1,4,-1,-4),const os::Color32_s& cColor = get_default_color(COL_SHADOW) );
+    
 
     void		DrawString( const Point& cPos, const String& cString );
     void		DrawString( const String& cString );
