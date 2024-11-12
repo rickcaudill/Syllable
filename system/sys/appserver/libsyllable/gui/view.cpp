@@ -2003,6 +2003,26 @@ void View::Paint( const Rect & cUpdateRect )
 	EraseRect( cUpdateRect );
 }
 
+/** Called by the system update "damaged" areas of the view.
+ * \par Description:
+ * \par Note:
+ * \par Warning:
+ * \param cGraphics
+ * This is the object than contains the drawing methods
+ * to be used within the function
+ * \param cUpdateRect
+ *	A rectangle enclosing all damaged areas. This is just a rough
+ *	"worst-case", further fine-grained clipping will be performed
+ *	by the Application Server to avoid updating non-damaged pixels
+ *	and make the update as fast and flicker-free as possible.
+ *
+ * \sa Invalidate(), Flush()
+ * \author Jonas Jarvoll (jonas@pyro-os.org)
+ *****************************************************************************/
+void View::Paint( graphics::Graphics& cGraphics, const Rect & cUpdateRect )
+{
+}
+
 /** Flush the render queue.
  * \par Description:
  *	Call the window's Flush() member to flush the render queue.
