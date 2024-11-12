@@ -2906,6 +2906,59 @@ void View::DrawFrame( const Rect & a_cRect, uint32 nStyle )
 	SetBgColor( bg_save );
 }
 
+void View::DrawRoundedFrame(const os::Rect& cResize,const os::Color32_s& sColor)
+{
+	os::Rect cBounds = GetBounds();
+	DrawRoundedFrame(cBounds,cResize,sColor);
+}
+
+void View::DrawRoundedFrame(const os::Rect& cBounds, const os::Rect& cResize, const os::Color32_s& sColor)
+{
+	os::Rect cFillRect =  cBounds; //GetBounds();
+	cFillRect.Resize(cResize.left,cResize.top,cResize.right,cResize.bottom);
+	
+	SetFgColor(sColor);
+
+
+	//Draw the left side of the frame
+	DrawLine( os::Point( 0, cFillRect.top ), os::Point( 0, cFillRect.bottom ) );
+	
+	//Draw the right side of the frame
+	DrawLine( os::Point( cFillRect.right + 1, cFillRect.top ), os::Point( cFillRect.right + 1, cFillRect.bottom ) );
+	
+	//Draw the top of the frame
+	DrawLine( os::Point( 4, 0 ), os::Point( cBounds.right - 4, 0 ) );
+	
+	
+	//Draw the top/left corner
+	DrawLine( os::Point( 2, 1 ), os::Point( 3, 1 ) );
+	DrawLine( os::Point( 1, 2 ), os::Point( 1, 3 ) );
+	
+	
+	//draw the top/right corner
+	DrawLine( os::Point( cBounds.right - 2, 1 ), os::Point( cBounds.right - 3, 1 ) );
+	DrawLine( os::Point( cBounds.right - 1, 2 ), os::Point( cBounds.right - 1, 3 ) );
+
+	
+	cFillRect.top = cBounds.bottom - 3;
+	cFillRect.bottom = cBounds.bottom;
+	SetFgColor(sColor);
+	
+	//Draw the bottom of the frame
+	DrawLine( os::Point( 4, cFillRect.bottom - 0 ), os::Point( cBounds.right - 4, cFillRect.bottom - 0 ) );
+
+	//Draw the bottom/left corner
+	DrawLine( os::Point( 2, cFillRect.bottom - 1 ), os::Point( 3, cFillRect.bottom - 1 ) );
+	DrawLine( os::Point( 1, cFillRect.bottom - 2 ), os::Point( 1, cFillRect.bottom - 3 ) );
+
+	//Draw the bottom/right corner
+	DrawLine( os::Point( cBounds.right - 2, cFillRect.bottom - 1 ), os::Point(  cBounds.right - 3, cFillRect.bottom - 1 ) );
+	DrawLine( os::Point( cBounds.right - 1, cFillRect.bottom - 2 ), os::Point(  cBounds.right - 1, cFillRect.bottom - 3 ) );
+
+	DrawLine( os::Point( 4, cFillRect.bottom ), os::Point( cBounds.right - 4, cFillRect.bottom ) );	
+
+}
+
 //----------------------------------------------------------------------------
 // NAME:
 // DESC:
