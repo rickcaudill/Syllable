@@ -59,6 +59,8 @@ static Color32_s g_asDefaultColors[] = {
 	Color32_s( 0xBA, 0xC7, 0xE3, 0xff ),    // COL_ICON_SELECTED
 	Color32_s( 0xff, 0xff, 0xff, 0xff ),	// COL_ICON_BACKGROUND
 	Color32_s( 0x00, 0xCC, 0x00, 0xff ),    // COL_FOCUS
+	Color32_s( 100, 100, 100, 0xff), 		// COL_DISABLED
+
 };
 
 /** Get the value of one of the standard system colors.
